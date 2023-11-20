@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Scripting.APIUpdating;
 
@@ -10,8 +11,10 @@ public class Piece : MonoBehaviour
     public TetrominoData data { get; private set; }
     public Vector3Int[] cells { get; private set; }
     public int rotationIndex { get; private set; }
-    public Boolean tspin { get; private set; }
-    public Boolean tspinmini { get; private set; }
+    public bool tspin { get; private set; }
+    public bool tspinmini { get; private set; }
+
+    public bool canHold { get; private set; }
     // public Boolean islastactionrotate { get; private set; }
 
     public void Initialize(Board board, Vector3Int position, TetrominoData data)
@@ -64,7 +67,10 @@ public class Piece : MonoBehaviour
         {
             Rotate(1);
         }
-
+        if(Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            Hold();
+        }
         board.Set(this);
         
     }
@@ -75,6 +81,13 @@ public class Piece : MonoBehaviour
         else{
             return min + (value - min) % (max - min);
         }
+    }
+
+    private void Hold(){
+        if(canHold)
+            board.Hold();
+        canHold = false;
+
     }
 
     private bool Rotate (int direction){
@@ -173,6 +186,8 @@ public class Piece : MonoBehaviour
     private void Lock()
     {
         board.Set(this);
+
+        canHold = true;
 
         // Check for line clears
 

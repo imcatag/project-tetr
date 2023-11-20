@@ -13,6 +13,8 @@ public class Board : MonoBehaviour
     public TetrominoData[] tetrominoes;
     public Tilemap tilemap { get; private set; }
     public Piece activePiece { get; private set; }
+    public Tetromino heldTetromino { get; private set; }
+    public Boolean hasHeld { get; private set; }
     private Vector3Int spawnPosition = new Vector3Int(4, 19, 0);
     private Vector2Int boardSize = new Vector2Int(10, 40);
     public TetrominoData[] bag = new TetrominoData[7];
@@ -105,6 +107,46 @@ public class Board : MonoBehaviour
 
 
         Set(activePiece);
+    }
+
+    public void Hold()
+    {
+        if(!hasHeld)
+        {
+            hasHeld = true;
+            // if there is no held piece, hold the current piece
+            heldTetromino = activePiece.data.tetromino;
+            // destroy the current piece
+            Clear(activePiece);
+            // spawn a new piece
+            SpawnPiece();
+        }
+        else
+        {
+            // if there is a held piece, swap the current piece with the held piece
+            TetrominoData temp = activePiece.data;
+            activePiece.Initialize(this, spawnPosition, tetrominoes[(int)heldTetromino]);
+            heldTetromino = temp.tetromino;
+        }
+
+        // display held piece in UI at (-4, 18)
+        // unset the tiles from -6, 14 to 1, 20
+        for (int i = -6; i < 2; i++)
+        {
+            for (int j = 14; j < 21; j++)
+            {
+                tilemap.SetTile(new Vector3Int(i, j, 0), null);
+            }
+        }
+
+        // get the cells
+        Vector2Int[] cells = tetrominoes[(int)heldTetromino].cells;
+        // set the tiles
+        for (int j = 0; j < cells.Length; j++)
+        {
+            tilemap.SetTile(new Vector3Int(cells[j].x - 4, cells[j].y + 18, 0), tetrominoes[(int)heldTetromino].tile);
+        }
+
     }
 
     public void Set(Piece piece)
