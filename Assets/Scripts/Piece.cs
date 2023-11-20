@@ -29,6 +29,7 @@ public class Piece : MonoBehaviour
         {
             this.cells[i] = (Vector3Int)data.cells[i];
         }
+        Debug.Log("Position: " + (position) + " // RotationIndex: " + (rotationIndex));
     }
 
     public void Update()

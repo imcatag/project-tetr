@@ -13,8 +13,8 @@ public class Board : MonoBehaviour
     public TetrominoData[] tetrominoes;
     public Tilemap tilemap { get; private set; }
     public Piece activePiece { get; private set; }
-    public Vector3Int spawnPosition = new Vector3Int(0, 0, 0);
-    public Vector2Int boardSize = new Vector2Int(10, 20);
+    private Vector3Int spawnPosition = new Vector3Int(4, 19, 0);
+    private Vector2Int boardSize = new Vector2Int(10, 40);
     public TetrominoData[] bag = new TetrominoData[7];
     public int bagIndex = 0;
     public Queue<TetrominoData> queue = new Queue<TetrominoData>();
@@ -27,7 +27,9 @@ public class Board : MonoBehaviour
     }
     public RectInt Bounds {
         get{
-            Vector2Int position = new Vector2Int(-this.boardSize.x / 2, -this.boardSize.y / 2);
+            // make the rectint such that the leftmost and bottommost tile is at (0, 0)
+            // Vector2Int position = new Vector2Int(-this.boardSize.x / 2, -this.boardSize.y / 2);
+            Vector2Int position = new Vector2Int(0, 0);
             return new RectInt(position, this.boardSize);
         }
     }
@@ -74,6 +76,8 @@ public class Board : MonoBehaviour
 
         var data = queue.Dequeue();
         activePiece.Initialize(this, spawnPosition, data);
+        
+
 
         Set(activePiece);
     }
