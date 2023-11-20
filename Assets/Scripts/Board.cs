@@ -136,6 +136,77 @@ public class Board : MonoBehaviour
         return true;
     }
 
+    public int ClearLines(bool tspin, bool tspinmini)
+    {
+        // go through each row and check if it is full
+
+        // if it is full, clear the row and move all rows above it down
+
+        // return number of lines cleared
+
+        int linesCleared = 0;
+
+        for (int y = Bounds.yMin; y < Bounds.yMax; y++)
+        {
+            bool rowFull = true;
+
+            for (int x = Bounds.xMin; x < Bounds.xMax; x++)
+            {
+                if (!this.tilemap.HasTile(new Vector3Int(x, y, 0)))
+                {
+                    rowFull = false;
+                    break;
+                }
+            }
+
+            if (rowFull)
+            {
+                linesCleared++;
+
+                for (int x = Bounds.xMin; x < Bounds.xMax; x++)
+                {
+                    this.tilemap.SetTile(new Vector3Int(x, y, 0), null);
+                }
+
+                for (int aboveY = y + 1; aboveY < Bounds.yMax; aboveY++)
+                {
+                    for (int x = Bounds.xMin; x < Bounds.xMax; x++)
+                    {
+                        TileBase tile = this.tilemap.GetTile(new Vector3Int(x, aboveY, 0));
+                        if (tile != null)
+                        {
+                            this.tilemap.SetTile(new Vector3Int(x, aboveY - 1, 0), tile);
+                            this.tilemap.SetTile(new Vector3Int(x, aboveY, 0), null);
+                        }
+                    }
+                }
+
+                y--;
+            }
+        }
+
+        if (linesCleared > 0)
+        {
+            if (tspin)
+            {
+                if (tspinmini)
+                {
+                    Debug.Log("T-Spin Mini " + linesCleared + " lines");
+                }
+                else
+                {
+                    Debug.Log("T-Spin " + linesCleared + " lines");
+                }
+            }
+            else
+            {
+                Debug.Log("Clear " + linesCleared + " lines");
+            }
+        }
+
+        return linesCleared;
+    }
+
     public int TSpinCorners(Vector3Int position){
         var offsets = new Vector2Int [] {new Vector2Int(-1, 1), new Vector2Int(1, 1), new Vector2Int(1, -1), new Vector2Int(-1, -1)};
         int cornercount = 0;

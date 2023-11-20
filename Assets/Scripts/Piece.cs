@@ -12,7 +12,7 @@ public class Piece : MonoBehaviour
     public int rotationIndex { get; private set; }
     public Boolean tspin { get; private set; }
     public Boolean tspinmini { get; private set; }
-    public Boolean islastactionrotate { get; private set; }
+    // public Boolean islastactionrotate { get; private set; }
 
     public void Initialize(Board board, Vector3Int position, TetrominoData data)
     {
@@ -145,36 +145,16 @@ public class Piece : MonoBehaviour
                     }
                 }
                 
-                
                 if(tspin) Debug.Log("TSPIN");
                 if(tspinmini) Debug.Log("TSPINMINI");
                 this.rotationIndex = newrotationIndex;
                 this.cells = newCells3;
                 this.position += (Vector3Int)offset;
-                islastactionrotate = true;
+                // islastactionrotate = true;
                 return true;
             }
         }
-    
-        // for (int i = 0; i < newCells.Length; i++){
-        //     Vector2Int cell = newCells[i];
-        //     Vector3Int rotatedCell = new Vector3Int(cell.x, cell.y, 0);
-        //     rotatedCells[i] = rotatedCell;
-        // }
 
-        // check if new cells are valid
-
-        // bool valid = board.IsRotationValid(rotatedCells, this.position);
-
-        // if (valid){
-        //     this.cells = rotatedCells;
-        // }
-        // else{
-        //     this.rotationIndex = Wrap(this.rotationIndex - direction, 0, 4);
-        // }
-
-        // return valid;
-        
         return false;
 
     }
@@ -193,6 +173,9 @@ public class Piece : MonoBehaviour
     {
         board.Set(this);
 
+        // Check for line clears
+
+        board.ClearLines(tspin, tspinmini);
         
 
         board.SpawnPiece();
@@ -209,7 +192,9 @@ public class Piece : MonoBehaviour
         if (valid)
         {
             position = newPosition;
-            islastactionrotate = false;
+            tspin = false;
+            tspinmini = false;
+            // islastactionrotate = false;
         }
         return valid;
         
