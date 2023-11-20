@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Runtime.CompilerServices;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.U2D;
 
 public class Board : MonoBehaviour
 {
@@ -30,7 +33,7 @@ public class Board : MonoBehaviour
     }
     private void Awake()
     {
-        Application.targetFrameRate = 144;
+        Application.targetFrameRate = 0;
 
         this.tilemap = GetComponentInChildren<Tilemap>();
         this.activePiece = GetComponentInChildren<Piece>();
@@ -131,5 +134,45 @@ public class Board : MonoBehaviour
         }
 
         return true;
+    }
+
+    public int TSpinCorners(Vector3Int position){
+        var offsets = new Vector2Int [] {new Vector2Int(-1, 1), new Vector2Int(1, 1), new Vector2Int(1, -1), new Vector2Int(-1, -1)};
+        int cornercount = 0;
+        for (int i = 0; i < offsets.Length; i++){
+            // if there is a tile in the corner
+            if (this.tilemap.HasTile(position + (Vector3Int)offsets[i])){
+                cornercount++;
+            }
+            // or if corner is out of border
+            else if(!Bounds.Contains((Vector2Int)(position + (Vector3Int)offsets[i]))){
+                cornercount++;
+            }
+        }
+        return cornercount;
+    }
+
+    public int TSpinFacing(Vector3Int position, int rotationIndex){
+        Dictionary<int, Vector2Int[]> dictCorners = new Dictionary<int, Vector2Int[]>{
+            {0, new Vector2Int[] {new Vector2Int(-1, 1), new Vector2Int(1, 1)}},
+            {1, new Vector2Int[] {new Vector2Int(1, 1), new Vector2Int(1, -1)}},
+            {2, new Vector2Int[] {new Vector2Int(1, -1), new Vector2Int(-1, -1)}},
+            {3, new Vector2Int[] {new Vector2Int(-1, -1), new Vector2Int(-1, 1)}}
+        };
+
+        int facingcount = 0;
+        Vector2Int[] corners = dictCorners[rotationIndex];
+        foreach(var Corner in corners){
+            // if there is a tile in the corner
+            if (this.tilemap.HasTile(position + (Vector3Int)Corner)){
+                facingcount++;
+            }
+            // or if corner is out of border
+            else if(!Bounds.Contains((Vector2Int)(position + (Vector3Int)Corner))){
+                facingcount++;
+            }
+        }
+
+        return facingcount;
     }
 }

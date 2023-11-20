@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Scripting.APIUpdating;
@@ -9,6 +10,9 @@ public class Piece : MonoBehaviour
     public TetrominoData data { get; private set; }
     public Vector3Int[] cells { get; private set; }
     public int rotationIndex { get; private set; }
+    public Boolean tspin { get; private set; }
+    public Boolean tspinmini { get; private set; }
+    public Boolean islastactionrotate { get; private set; }
 
     public void Initialize(Board board, Vector3Int position, TetrominoData data)
     {
@@ -72,37 +76,6 @@ public class Piece : MonoBehaviour
         }
     }
 
-/*
-    public static readonly List<Vector2Int[]> WallKicksI = new List<Vector2Int[]> {
-        new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(-2, 0), new Vector2Int(1, 0), new Vector2Int(-2, -1), new Vector2Int(1, 2) }, // 0 -> 1
-        new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(-1, 0), new Vector2Int(2, 0), new Vector2Int(-1, 2), new Vector2Int(2, -1) }, // 1 -> 2
-        new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(2, 0), new Vector2Int(-1, 0), new Vector2Int(2, 1), new Vector2Int(-1, -2) }, // 2 -> 3
-        new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(-2, 0), new Vector2Int(1, -2), new Vector2Int(-2, 1) }, // 3 -> 0
-    };
-
-    public static readonly List<Vector2Int[]> CounterWallKicksI = new List<Vector2Int[]> {
-        new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(2, 0), new Vector2Int(-1, 0), new Vector2Int(2, 1), new Vector2Int(-1, -2) }, // 1 -> 0
-        new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(-2, 0), new Vector2Int(1, -2), new Vector2Int(-2, 1) }, // 2 -> 1
-        new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(-2, 0), new Vector2Int(1, 0), new Vector2Int(-2, -1), new Vector2Int(1, 2) }, // 3 -> 2
-        new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(-1, 0), new Vector2Int(2, 0), new Vector2Int(-1, 2), new Vector2Int(2, -1) }, // 0 -> 3
-    };
-
-    public static readonly List<Vector2Int[]> WallKicksJLOSTZ = new List<Vector2Int[]> {
-        new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(-1, 0), new Vector2Int(-1, 1), new Vector2Int(0, -2), new Vector2Int(-1, -2) }, // 0 -> 1
-        new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(1, -1), new Vector2Int(0, 2), new Vector2Int(1, 2) }, // 1 -> 2
-        new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(1, 1), new Vector2Int(0, -2), new Vector2Int(1, -2) }, // 2 -> 3
-        new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(-1, 0), new Vector2Int(-1, -1), new Vector2Int(0, 2), new Vector2Int(-1, 2) }, // 3 -> 0
-    };
-
-    public static readonly List<Vector2Int[]> CounterWallKicksJLOSTZ = new List<Vector2Int[]> {
-        new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(1, -1), new Vector2Int(0, 2), new Vector2Int(1, 2) }, // 1 -> 0
-        new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(-1, 0), new Vector2Int(-1, 1), new Vector2Int(0, -2), new Vector2Int(-1, -2) }, // 2 -> 1
-        new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(-1, 0), new Vector2Int(-1, -1), new Vector2Int(0, 2), new Vector2Int(-1, 2) }, // 3 -> 2
-        new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(1, 1), new Vector2Int(0, -2), new Vector2Int(1, -2) }, // 0 -> 3
-    };
-
-*/
-
     private bool Rotate (int direction){
 
         var newrotationIndex = Wrap(this.rotationIndex + direction, 0, 4);
@@ -151,10 +124,34 @@ public class Piece : MonoBehaviour
             bool valid = board.IsRotationValid(rotatedCellsCopy, this.position);
             if (valid){
                 Debug.Log("Valid" + (offset));
+
+                tspin = false;
+                tspinmini = false;
+
+                if(data.tetromino == Tetromino.T){
+                    // check for fin and overhang t spin -- if the last kick was used for a T in rotationIndex 2 or 0
+                    if((rotationIndex == 2 || rotationIndex == 0) && (i == 4)){
+                        tspin = true;
+                    }
+                    // else if there is 3 corners filled
+                    else if(board.TSpinCorners(this.position + (Vector3Int)offset) >= 3){
+                        // depending on rotation index, check if the corners the t is facing are filled
+                        if (board.TSpinFacing(this.position + (Vector3Int)offset, newrotationIndex) >= 2){
+                            tspin = true;
+                        }
+                        else{
+                            tspinmini = true;
+                        }
+                    }
+                }
                 
+                
+                if(tspin) Debug.Log("TSPIN");
+                if(tspinmini) Debug.Log("TSPINMINI");
                 this.rotationIndex = newrotationIndex;
                 this.cells = newCells3;
                 this.position += (Vector3Int)offset;
+                islastactionrotate = true;
                 return true;
             }
         }
@@ -195,6 +192,9 @@ public class Piece : MonoBehaviour
     private void Lock()
     {
         board.Set(this);
+
+        
+
         board.SpawnPiece();
     }
     private bool Move(Vector2Int translation)
@@ -208,9 +208,8 @@ public class Piece : MonoBehaviour
         bool valid = board.IsPositionValid(this, newPosition);
         if (valid)
         {
-            
             position = newPosition;
-            
+            islastactionrotate = false;
         }
         return valid;
         
