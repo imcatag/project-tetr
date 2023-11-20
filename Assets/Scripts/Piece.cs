@@ -15,8 +15,11 @@ public class Piece : MonoBehaviour
     public bool tspinmini { get; private set; }
 
     public bool canHold { get; private set; }
-    // public Boolean islastactionrotate { get; private set; }
 
+    public void Awake()
+    {
+        canHold = true;
+    }
     public void Initialize(Board board, Vector3Int position, TetrominoData data)
     {
         this.board = board;
