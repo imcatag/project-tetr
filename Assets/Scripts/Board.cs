@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;  
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -75,6 +75,31 @@ public class Board : MonoBehaviour
         }
 
         var data = queue.Dequeue();
+
+        // display first 5 elements in queue in UI, starting at (12, 18) and going down by 3 each time
+        // unset the tiles from 10, 0 to 14, 20
+        
+        for (int i = 10; i < 15; i++)
+        {
+            for (int j = 0; j < 20; j++)
+            {
+                tilemap.SetTile(new Vector3Int(i, j, 0), null);
+            }
+        }
+
+        for(int i = 0; i < 5; i++)
+        {
+            // get the tetrominoes
+            TetrominoData tetromino = queue.ToArray()[i];
+            // get the cells
+            Vector2Int[] cells = tetromino.cells;
+            // set the tiles
+            for (int j = 0; j < cells.Length; j++)
+            {
+                tilemap.SetTile(new Vector3Int(cells[j].x + 12, cells[j].y + 18 - (i * 3), 0), tetromino.tile);
+            }
+        }
+
         activePiece.Initialize(this, spawnPosition, data);
         
 
