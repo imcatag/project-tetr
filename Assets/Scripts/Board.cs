@@ -102,9 +102,20 @@ public class Board : MonoBehaviour
             }
         }
 
-        activePiece.Initialize(this, spawnPosition, data);
-        
+        // check if there are tiles obstructing the spawn of a new piece
 
+        for(int i = 0; i < data.cells.Length; i++)
+        {
+            Vector3Int tilePosition = (Vector3Int)data.cells[i] + spawnPosition;
+            if (this.tilemap.HasTile(tilePosition))
+            {
+                Debug.Log("Game Over");
+                
+                return;
+            }
+        }
+
+        activePiece.Initialize(this, spawnPosition, data);
 
         Set(activePiece);
     }
