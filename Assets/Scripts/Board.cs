@@ -216,10 +216,12 @@ public class Board : MonoBehaviour
         // return number of lines cleared
 
         int linesCleared = 0;
+        bool allClear = true;
 
         for (int y = Bounds.yMin; y < Bounds.yMax; y++)
         {
             bool rowFull = true;
+            bool atLeastOne = false;
 
             for (int x = Bounds.xMin; x < Bounds.xMax; x++)
             {
@@ -228,7 +230,11 @@ public class Board : MonoBehaviour
                     rowFull = false;
                     break;
                 }
+                else
+                    atLeastOne = true;
             }
+
+            if(atLeastOne && !rowFull) allClear = false;
 
             if (rowFull)
             {
@@ -273,6 +279,8 @@ public class Board : MonoBehaviour
             {
                 Debug.Log("Clear " + linesCleared + " lines");
             }
+
+            if(allClear) Debug.Log("ALL CLEAR");
         }
 
         return linesCleared;

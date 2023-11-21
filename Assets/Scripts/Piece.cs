@@ -13,7 +13,6 @@ public class Piece : MonoBehaviour
     public int rotationIndex { get; private set; }
     public bool tspin { get; private set; }
     public bool tspinmini { get; private set; }
-
     public bool canHold { get; private set; }
 
     public void Awake()
