@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using System.Runtime.CompilerServices;  
-using TMPro;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -13,6 +12,7 @@ public class Board : MonoBehaviour
     public TetrominoData[] tetrominoes;
     public Tilemap tilemap { get; private set; }
     public Piece activePiece { get; private set; }
+    public Ghost ghost { get; private set; }
     public Tetromino heldTetromino { get; private set; }
     public Boolean hasHeld { get; private set; }
     private Vector3Int spawnPosition = new Vector3Int(4, 19, 0);
@@ -38,6 +38,10 @@ public class Board : MonoBehaviour
     private void Awake()
     {
         Application.targetFrameRate = 0;
+
+        ghost = FindObjectOfType<Ghost>();
+
+        ghost.Initialize(this);
 
         this.tilemap = GetComponentInChildren<Tilemap>();
         this.activePiece = GetComponentInChildren<Piece>();
@@ -167,6 +171,8 @@ public class Board : MonoBehaviour
             Vector3Int tilePosition = piece.cells[i] + piece.position;
             tilemap.SetTile(tilePosition, piece.data.tile);
         }
+
+        ghost.UpdateGhost(piece);
     }
 
     public void Clear(Piece piece)
@@ -336,4 +342,33 @@ public class Board : MonoBehaviour
 
         return facingcount;
     }
+
+    public bool Collides(Vector3Int[] cells, Vector3Int position, Piece exceptionPiece){
+        for (int i = 0; i < cells.Length; i++){
+            Vector3Int tilePosition = cells[i] + position;
+
+            bool excepts = false;
+            for(int j = 0; j < exceptionPiece.cells.Length; j++){
+                if(tilePosition == exceptionPiece.cells[j] + exceptionPiece.position){
+                    excepts = true;
+                }
+            }
+
+            if(excepts) continue;
+            
+            if (this.tilemap.HasTile(tilePosition))
+            {
+                Debug.Log("Collides at" + (tilePosition));
+                return true;
+            }
+
+            if (!Bounds.Contains((Vector2Int)tilePosition))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }
+

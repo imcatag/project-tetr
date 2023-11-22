@@ -9,11 +9,10 @@ public class Piece : MonoBehaviour
     public Board board { get; private set; }
     public Vector3Int position { get; private set; }
     public TetrominoData data { get; private set; }
-    public Vector3Int[] cells { get; private set; }
-    public int rotationIndex { get; private set; }
+    public Vector3Int[] cells { get; set; }
+    public int rotationIndex { get; set; }
     public bool tspin { get; private set; }
     public bool tspinmini { get; private set; }
-
     public bool canHold { get; private set; }
 
     public void Awake()
@@ -46,7 +45,7 @@ public class Piece : MonoBehaviour
         {
             Move(Vector2Int.left);
         }
-        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        if (Input.GetKeyDown(KeyCode.RightArrow))
         {
             Move(Vector2Int.right);
         }
@@ -74,6 +73,7 @@ public class Piece : MonoBehaviour
         {
             Hold();
         }
+        
         board.Set(this);
         
     }
@@ -199,13 +199,13 @@ public class Piece : MonoBehaviour
 
         board.SpawnPiece();
     }
-    private bool Move(Vector2Int translation)
+    public bool Move(Vector2Int translation)
     {
-        Debug.Log("OldPosition" + (position));
+        // Debug.Log("OldPosition" + (position));
 
         Vector3Int newPosition = position + (Vector3Int)translation;
 
-        Debug.Log("NewPosition" + (newPosition));
+        // Debug.Log("NewPosition" + (newPosition));
 
         bool valid = board.IsPositionValid(this, newPosition);
         if (valid)
