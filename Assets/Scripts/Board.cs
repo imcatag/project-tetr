@@ -175,6 +175,15 @@ public class Board : MonoBehaviour
         ghost.UpdateGhost(piece);
     }
 
+    public void Update()
+    {
+        // pressing R reloads the scene
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+        }
+    }
+
     public void Clear(Piece piece)
     {
         for (int i = 0; i < piece.cells.Length; i++)
@@ -245,7 +254,6 @@ public class Board : MonoBehaviour
                 if (!this.tilemap.HasTile(new Vector3Int(x, y, 0)))
                 {
                     rowFull = false;
-                    break;
                 }
                 else
                     atLeastOne = true;
@@ -358,7 +366,7 @@ public class Board : MonoBehaviour
             
             if (this.tilemap.HasTile(tilePosition))
             {
-                Debug.Log("Collides at" + (tilePosition));
+                // Debug.Log("Collides at" + (tilePosition));
                 return true;
             }
 

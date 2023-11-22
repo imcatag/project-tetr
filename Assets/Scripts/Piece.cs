@@ -34,7 +34,7 @@ public class Piece : MonoBehaviour
         {
             this.cells[i] = (Vector3Int)data.cells[i];
         }
-        Debug.Log("Position: " + (position) + " // RotationIndex: " + (rotationIndex));
+        // Debug.Log("Position: " + (position) + " // RotationIndex: " + (rotationIndex));
     }
 
     public void Update()
@@ -73,7 +73,7 @@ public class Piece : MonoBehaviour
         {
             Hold();
         }
-        
+
         board.Set(this);
         
     }
@@ -98,10 +98,10 @@ public class Piece : MonoBehaviour
         var newrotationIndex = Wrap(this.rotationIndex + direction, 0, 4);
         
         foreach(var cell in cells){
-            Debug.Log(cell);
+            // Debug.Log(cell);
         }
 
-        Debug.Log("Position: " + (position) + " // Direction: " + (direction) + " // OldRotationIndex: " + (rotationIndex) + " // NewRotationIndex: " + (newrotationIndex));
+        // Debug.Log("Position: " + (position) + " // Direction: " + (direction) + " // OldRotationIndex: " + (rotationIndex) + " // NewRotationIndex: " + (newrotationIndex));
 
         Vector2Int[] newCells = Data.Cells[data.tetromino][newrotationIndex];
 
@@ -140,7 +140,7 @@ public class Piece : MonoBehaviour
             }
             bool valid = board.IsRotationValid(rotatedCellsCopy, this.position);
             if (valid){
-                Debug.Log("Valid" + (offset));
+                // Debug.Log("Valid" + (offset));
 
                 tspin = false;
                 tspinmini = false;
@@ -162,8 +162,8 @@ public class Piece : MonoBehaviour
                     }
                 }
                 
-                if(tspin) Debug.Log("TSPIN");
-                if(tspinmini) Debug.Log("TSPINMINI");
+                // if(tspin) Debug.Log("TSPIN");
+                // if(tspinmini) Debug.Log("TSPINMINI");
                 this.rotationIndex = newrotationIndex;
                 this.cells = newCells3;
                 this.position += (Vector3Int)offset;
