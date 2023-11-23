@@ -146,7 +146,7 @@ public class Board : MonoBehaviour
 
         // display held piece in UI at (-4, 18)
         // unset the tiles from -6, 14 to 1, 20
-        for (int i = -6; i < 2; i++)
+        for (int i = -6; i < 0; i++)
         {
             for (int j = 14; j < 21; j++)
             {
