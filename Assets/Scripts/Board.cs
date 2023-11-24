@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -18,8 +19,15 @@ public class Board : MonoBehaviour
     private Vector3Int spawnPosition = new Vector3Int(4, 19, 0);
     private Vector2Int boardSize = new Vector2Int(10, 40);
     public TetrominoData[] bag = new TetrominoData[7];
-    public int bagIndex = 0;
+    private int bagIndex;
     public Queue<TetrominoData> queue = new Queue<TetrominoData>();
+    private int BackToBack = 0;
+    private int Combo = 0;
+    private int totalLines = 0;
+    public TextMeshProUGUI totalLinesText;
+    public TextMeshProUGUI extraText;
+    public TextMeshProUGUI B2BText;
+    public TextMeshProUGUI comboText;
     public List<Tetromino> CreateBag()
     {
         int bagRandom = UnityEngine.Random.Range(0, 5040);
@@ -289,24 +297,104 @@ public class Board : MonoBehaviour
 
         if (linesCleared > 0)
         {
-            if (tspin)
-            {
-                if (tspinmini)
-                {
-                    Debug.Log("T-Spin Mini " + linesCleared + " lines");
-                }
-                else
-                {
-                    Debug.Log("T-Spin " + linesCleared + " lines");
-                }
-            }
-            else
-            {
-                Debug.Log("Clear " + linesCleared + " lines");
+            Combo++;
+            if(Combo > 1){
+                comboText.text = "Combo: " + Combo.ToString();
+                comboText.CrossFadeAlpha(1, 0, false);
+                comboText.CrossFadeAlpha(0, 2, false);
             }
 
+            if (tspin)
+            {
+                switch (linesCleared){
+                    case 1:
+                        extraText.text = "T-Spin Single";
+                        break;
+                    case 2:
+                        extraText.text = "T-Spin Double";
+                        break;
+                    case 3:
+                        extraText.text = "T-Spin Triple";
+                        break;
+                    default:
+                        extraText.text = "T-Spin " + linesCleared.ToString() + " Lines";
+                        break;
+                }
+                BackToBack++;
+            }
+            else if (tspinmini)
+                {
+                    switch (linesCleared){
+                        case 1:
+                            extraText.text = "T-Spin Mini Single";
+                            break;
+                        case 2:
+                            extraText.text = "T-Spin Mini Double";
+                            break;
+                        case 3:
+                            extraText.text = "T-Spin Mini Triple";
+                            break;
+                        default:
+                            extraText.text = "T-Spin Mini " + linesCleared.ToString() + " Lines";
+                            break;
+                    }
+                    BackToBack++;
+                }
+            else
+            {
+                switch (linesCleared){
+                    case 1:
+                        extraText.text = "Single";
+                        BackToBack = 0;
+                        break;
+                    case 2:
+                        extraText.text = "Double";
+                        BackToBack = 0;
+                        break;
+                    case 3:
+                        extraText.text = "Triple";
+                        BackToBack = 0;
+                        break;
+                    case 4:
+                        extraText.text = "Quad";
+                        BackToBack++;
+                        break;
+                    default:
+                        extraText.text = linesCleared.ToString() + " Lines";
+                        break;
+                }
+            }
+            // over the next 2 seconds, change the alpha of extraText from 1 to 0
+            extraText.CrossFadeAlpha(1, 0, false);
+            extraText.CrossFadeAlpha(0, 2, false);
+
             if(allClear) Debug.Log("ALL CLEAR");
+
+            if(BackToBack > 0){
+                B2BText.text = "B2B: " + BackToBack.ToString();
+            }
+            else{
+                B2BText.text = "";
+            }
+
+            totalLines += linesCleared;
+            totalLinesText.text = "Lines: " + totalLines.ToString();
         }
+        else
+        {
+            if(tspinmini){
+                extraText.text = "T-Spin Mini";
+            }
+            else if(tspin){
+                extraText.text = "T-Spin";
+            }
+            extraText.CrossFadeAlpha(1, 0, false);
+            extraText.CrossFadeAlpha(0, 2, false);
+            Combo = 0;
+        }
+        
+
+        
 
         return linesCleared;
     }
