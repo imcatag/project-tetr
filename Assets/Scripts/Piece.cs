@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor.Tilemaps;
 using UnityEngine;
 using UnityEngine.Scripting.APIUpdating;
 
@@ -69,6 +70,10 @@ public class Piece : MonoBehaviour
         {
             Rotate(1);
         }
+        if(Input.GetKeyDown(KeyCode.S))
+        {
+            Flip();
+        }
         if(Input.GetKeyDown(KeyCode.LeftShift))
         {
             Hold();
@@ -92,14 +97,47 @@ public class Piece : MonoBehaviour
         canHold = false;
 
     }
+    private bool Flip(){
+        var newrotationIndex = Wrap(this.rotationIndex + 2, 0, 4);
 
+        Vector2Int[] newCells = Data.Cells[data.tetromino][newrotationIndex];
+
+        //create copy of newcells that is vector3Int[]
+
+        Vector3Int[] newCells3 = new Vector3Int[newCells.Length];
+
+        for (int i = 0; i < newCells.Length; i++){
+            Vector2Int cell = newCells[i];
+            Vector3Int newCell = new Vector3Int(cell.x, cell.y, 0);
+            newCells3[i] = newCell;
+        }
+
+        Vector2Int[] offsetList = Data.Flips[rotationIndex];
+
+        // go through each offset, create a copy of the rotated cells, and add the offset to each cell, then check if the new cells are valid
+
+        for (int i = 0; i < offsetList.Length; i++){
+            Vector2Int offset = offsetList[i];
+            Vector3Int[] rotatedCellsCopy = new Vector3Int[newCells.Length];
+            for (int j = 0; j < newCells.Length; j++){
+                rotatedCellsCopy[j] = (Vector3Int) newCells[j] + (Vector3Int)offset;
+            }
+            bool valid = board.IsRotationValid(rotatedCellsCopy, this.position);
+            if (valid){
+                // Debug.Log("Valid" + (offset));
+                this.rotationIndex = newrotationIndex;
+                this.cells = newCells3;
+                this.position += (Vector3Int)offset;
+                // islastactionrotate = true;
+                return true;
+            }
+        }
+
+        return false;
+    }
     private bool Rotate (int direction){
 
         var newrotationIndex = Wrap(this.rotationIndex + direction, 0, 4);
-        
-        foreach(var cell in cells){
-            // Debug.Log(cell);
-        }
 
         // Debug.Log("Position: " + (position) + " // Direction: " + (direction) + " // OldRotationIndex: " + (rotationIndex) + " // NewRotationIndex: " + (newrotationIndex));
 
