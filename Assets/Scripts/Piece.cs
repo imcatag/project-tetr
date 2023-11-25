@@ -15,10 +15,42 @@ public class Piece : MonoBehaviour
     public bool tspin { get; private set; }
     public bool tspinmini { get; private set; }
     public bool canHold { get; private set; }
-
+    private Dictionary<KeyCode, float> startedPressing = new Dictionary<KeyCode, float>();
+    private Dictionary<KeyCode, bool> contPressed = new Dictionary<KeyCode, bool>();
+    private Dictionary<KeyCode, Vector2Int> keyToVector = new Dictionary<KeyCode, Vector2Int>();
+    private Dictionary<KeyCode, float> DASStart = new Dictionary<KeyCode, float>();
     public void Awake()
     {
         canHold = true;
+        fillDicts();
+        
+    }
+
+    private void fillDicts()
+    {
+        startedPressing.Add(KeyCode.LeftArrow, 0f);
+        startedPressing.Add(KeyCode.RightArrow, 0f);
+        startedPressing.Add(KeyCode.DownArrow, 0f);
+        startedPressing.Add(KeyCode.Space, 0f);
+        startedPressing.Add(KeyCode.A, 0f);
+        startedPressing.Add(KeyCode.D, 0f);
+        startedPressing.Add(KeyCode.S, 0f);
+        startedPressing.Add(KeyCode.LeftShift, 0f);
+
+        contPressed.Add(KeyCode.LeftArrow, false);
+        contPressed.Add(KeyCode.RightArrow, false);
+        contPressed.Add(KeyCode.DownArrow, false);
+        contPressed.Add(KeyCode.Space, false);
+        contPressed.Add(KeyCode.A, false);
+        contPressed.Add(KeyCode.D, false);
+        contPressed.Add(KeyCode.S, false);
+        contPressed.Add(KeyCode.LeftShift, false);
+
+        keyToVector.Add(KeyCode.LeftArrow, Vector2Int.left);
+        keyToVector.Add(KeyCode.RightArrow, Vector2Int.right);
+
+        DASStart.Add(KeyCode.LeftArrow, 0f);
+        DASStart.Add(KeyCode.RightArrow, 0f);
     }
     public void Initialize(Board board, Vector3Int position, TetrominoData data)
     {
@@ -37,23 +69,73 @@ public class Piece : MonoBehaviour
         }
         // Debug.Log("Position: " + (position) + " // RotationIndex: " + (rotationIndex));
     }
+    private void setKeyProperties(KeyCode kc)
+    {
+        if(Input.GetKeyDown(kc) && !contPressed[kc])
+        {
+            Move(keyToVector[kc]);
+            startedPressing[kc] = Time.time;
+            DASStart[kc] = Time.time + board.DASTime;
+            contPressed[kc] = true;
+        }
+        if(Input.GetKeyUp(kc))
+        {
+            contPressed[kc] = false;
+        }
+    }
+    private void checkMove()
+    {
+        
+        setKeyProperties(KeyCode.LeftArrow);
+        setKeyProperties(KeyCode.RightArrow);
 
+
+        if(Time.time > DASStart[KeyCode.LeftArrow] && contPressed[KeyCode.LeftArrow] && Time.time > DASStart[KeyCode.RightArrow] && contPressed[KeyCode.RightArrow])
+        {
+            // Whichever DASStart is later gets priority
+            if(DASStart[KeyCode.LeftArrow] > DASStart[KeyCode.RightArrow])
+            {
+                while(Move(Vector2Int.left))
+                {
+                    continue;
+                }
+            }
+            else
+            {
+                while(Move(Vector2Int.right))
+                {
+                    continue;
+                }
+            }
+        }
+        // else check individual DASStarts
+        else if(Time.time > DASStart[KeyCode.LeftArrow] && contPressed[KeyCode.LeftArrow])
+        {
+            while(Move(Vector2Int.left))
+            {
+                continue;
+            }
+        }
+        else if(Time.time > DASStart[KeyCode.RightArrow] && contPressed[KeyCode.RightArrow])
+        {
+            while(Move(Vector2Int.right))
+            {
+                continue;
+            }
+        }
+    }
     public void Update()
     {
         board.Clear(this);
-
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            Move(Vector2Int.left);
-        }
-        if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            Move(Vector2Int.right);
-        }
+        checkMove();
         
-        if (Input.GetKeyDown(KeyCode.DownArrow))
+        if (Input.GetKey(KeyCode.DownArrow))
         {
-            Move(Vector2Int.down);
+            while(Move(Vector2Int.down)) // personal settings - using infinite soft drop for now
+            {
+                continue;
+            }
+            // Move(Vector2Int.down);
         }
 
         if (Input.GetKeyDown(KeyCode.Space))

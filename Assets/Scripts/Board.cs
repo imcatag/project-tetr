@@ -24,6 +24,7 @@ public class Board : MonoBehaviour
     private int BackToBack = 0;
     private int Combo = 0;
     private int totalLines = 0;
+    public float DASTime = 0.075f;
     public TextMeshProUGUI totalLinesText;
     public TextMeshProUGUI extraText;
     public TextMeshProUGUI B2BText;
