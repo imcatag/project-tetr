@@ -1,9 +1,5 @@
-using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditor.Tilemaps;
 using UnityEngine;
-using UnityEngine.Scripting.APIUpdating;
 
 public class Piece : MonoBehaviour
 {
@@ -115,12 +111,23 @@ public class Piece : MonoBehaviour
             {
                 continue;
             }
+            // If the other key is pressed, move once in that direction
+            if(contPressed[KeyCode.RightArrow])
+            {
+                Move(Vector2Int.right);
+            }
+
         }
         else if(Time.time > DASStart[KeyCode.RightArrow] && contPressed[KeyCode.RightArrow])
         {
             while(Move(Vector2Int.right))
             {
                 continue;
+            }
+            // If the other key is pressed, move once in that direction
+            if(contPressed[KeyCode.LeftArrow])
+            {
+                Move(Vector2Int.left);
             }
         }
     }
