@@ -385,12 +385,15 @@ public class Board : MonoBehaviour
         {
             if(tspinmini){
                 extraText.text = "T-Spin Mini";
+                extraText.CrossFadeAlpha(1, 0, false);
+                extraText.CrossFadeAlpha(0, 2, false);
             }
             else if(tspin){
                 extraText.text = "T-Spin";
+                extraText.CrossFadeAlpha(1, 0, false);
+                extraText.CrossFadeAlpha(0, 2, false);
             }
-            extraText.CrossFadeAlpha(1, 0, false);
-            extraText.CrossFadeAlpha(0, 2, false);
+            
             Combo = 0;
         }
         
