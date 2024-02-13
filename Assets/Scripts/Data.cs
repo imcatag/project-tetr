@@ -5,9 +5,7 @@ using UnityEngine;
 
 public static class Data
 {
-
     public static List<List<Tetromino>> allBags = generateBags();
-
     private static void GeneratePermutations(List<Tetromino> tetrominoes, int index, List<List<Tetromino>> permutations)
     {
         if (index == tetrominoes.Count - 1)
@@ -111,7 +109,6 @@ public static class Data
             }
         }
     };
-
 
     public static readonly List<Vector2Int[]> WallKicksI = new List<Vector2Int[]> {
         new Vector2Int[] { new Vector2Int(0, 0), new Vector2Int(-2, 0), new Vector2Int(1, 0), new Vector2Int(-2, -1), new Vector2Int(1, 2) }, // 0 -> 1

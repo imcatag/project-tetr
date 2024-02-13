@@ -8,12 +8,11 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.U2D;
 
-public class Board : MonoBehaviour
+public class BotBoard : MonoBehaviour
 {
     public TetrominoData[] tetrominoes;
     public Tilemap tilemap { get; private set; }
-    public Piece activePiece { get; private set; }
-    public Ghost ghost { get; private set; }
+    public BotPiece activePiece { get; private set; }
     public Tetromino heldTetromino { get; private set; }
     public Boolean hasHeld { get; private set; }
     private Vector3Int spawnPosition = new Vector3Int(4, 19, 0);
@@ -51,12 +50,8 @@ public class Board : MonoBehaviour
     {
         Application.targetFrameRate = 0;
 
-        ghost = FindObjectOfType<Ghost>();
-
-        ghost.Initialize(this);
-
         this.tilemap = GetComponentInChildren<Tilemap>();
-        this.activePiece = GetComponentInChildren<Piece>();
+        this.activePiece = GetComponentInChildren<BotPiece>();
 
         for (int i = 0; i < 7; i++) {
             tetrominoes[i].Initialize();
@@ -172,27 +167,21 @@ public class Board : MonoBehaviour
 
     }
 
-    public void Set(Piece piece)
+    public void Set(BotPiece piece)
     {
         for (int i = 0; i < piece.cells.Length; i++)
         {
             Vector3Int tilePosition = piece.cells[i] + piece.position;
             tilemap.SetTile(tilePosition, piece.data.tile);
         }
-
-        ghost.UpdateGhost(piece);
     }
 
     public void Update()
     {
-        // pressing R reloads the scene
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            UnityEngine.SceneManagement.SceneManager.LoadScene(0);
-        }
+
     }
 
-    public void Clear(Piece piece)
+    public void Clear(BotPiece piece)
     {
         for (int i = 0; i < piece.cells.Length; i++)
         {
@@ -201,7 +190,7 @@ public class Board : MonoBehaviour
         }
     }
 
-    public bool IsPositionValid(Piece piece, Vector3Int position)
+    public bool IsPositionValid(BotPiece piece, Vector3Int position)
     {
         for (int i = 0; i < piece.cells.Length; i++)
         {
