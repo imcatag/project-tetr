@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
-using System.Runtime.InteropServices.WindowsRuntime;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using UnityEngine.U2D;
+using Random = UnityEngine.Random;
 
-public class BotBoard : MonoBehaviour
+public class BotBoard : MonoBehaviour, Attackable
 {
     public TetrominoData[] tetrominoes;
     public Tilemap tilemap { get; private set; }
@@ -29,6 +26,7 @@ public class BotBoard : MonoBehaviour
     public TextMeshProUGUI B2BText;
     public TextMeshProUGUI comboText;
     private BagGenerator bagGenerator = new BagGenerator();
+    public List<int> damageToDo { get; set; }
     public List<Tetromino> CreateBag()
     {
         int bag = Convert.ToInt32(bagGenerator.mt.Next() % 5040);
@@ -52,6 +50,8 @@ public class BotBoard : MonoBehaviour
 
         this.tilemap = GetComponentInChildren<Tilemap>();
         this.activePiece = GetComponentInChildren<BotPiece>();
+        
+        damageToDo = new List<int>();
 
         for (int i = 0; i < 7; i++) {
             tetrominoes[i].Initialize();
@@ -457,6 +457,59 @@ public class BotBoard : MonoBehaviour
         }
         return false;
     }
+
     
+    void AddGarbage(int lines)
+    {
+        int hole = Random.Range(0, 9);
+        // move everything up by lines, top to bottom
+        for (int y = Bounds.yMax - lines; y >= Bounds.yMin; y--)
+        {
+            for (int x = Bounds.xMin; x < Bounds.xMax; x++)
+            {
+                TileBase tile = this.tilemap.GetTile(new Vector3Int(x, y - lines, 0));
+                this.tilemap.SetTile(new Vector3Int(x, y, 0), tile);
+            }
+        }
+        
+        // add the garbage
+        for (int y = Bounds.yMin; y < Bounds.yMin + lines; y++)
+        {
+            for (int x = Bounds.xMin; x < Bounds.xMax; x++)
+            {
+                if (x != hole)
+                {
+                    this.tilemap.SetTile(new Vector3Int(x, y, 0), tetrominoes[(int)Tetromino.NullTetromino].tile);
+                }
+            }
+        }
+    }
+    public void TakeDamage(int damage)
+    {
+        damageToDo.Add(damage);
+    }
+
+    public void ApplyDamage()
+    {
+        // apply up to 8 lines at once
+        int doableDamage = 8;
+        while(damageToDo.Count > 0 && doableDamage > 0)
+        {
+            // apply min(damageQueue.first, doableDamage) lines
+            if (damageToDo[0] <= doableDamage)
+            {
+                doableDamage -= damageToDo[0];
+                AddGarbage(damageToDo[0]);
+                damageToDo.RemoveAt(0);
+            }
+            else
+            {
+                damageToDo[0] -= doableDamage;
+                AddGarbage(doableDamage);
+                doableDamage = 0;
+                
+            }
+        }
+    }
 }
 

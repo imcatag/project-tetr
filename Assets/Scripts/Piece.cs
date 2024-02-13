@@ -351,12 +351,16 @@ public class Piece : MonoBehaviour
     private void Lock()
     {
         board.Set(this);
-
         canHold = true;
 
         // Check for line clears
 
-        board.ClearLines(tspin, tspinmini);
+        var cleared = board.ClearLines(tspin, tspinmini);
+        
+        if(cleared == 0)
+        {
+            board.ApplyDamage();
+        }
 
         autoFallTime = Time.time;
         autoFalls = 0;

@@ -9,7 +9,8 @@ public enum Tetromino
     J,
     L,
     S,
-    Z
+    Z,
+    NullTetromino
 }
 
 [System.Serializable]

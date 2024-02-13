@@ -1,28 +1,26 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
-using System.Runtime.InteropServices.WindowsRuntime;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using UnityEngine.U2D;
+using Random = UnityEngine.Random;
 
-public class Board : MonoBehaviour
+public class Board : MonoBehaviour, Attackable
 {
     public TetrominoData[] tetrominoes;
     public Tilemap tilemap { get; private set; }
     public Piece activePiece { get; private set; }
     public Ghost ghost { get; private set; }
     public Tetromino heldTetromino { get; private set; }
+    public List<int> damageToDo { get; set; }
     public Boolean hasHeld { get; private set; }
     private Vector3Int spawnPosition = new Vector3Int(4, 20, 0);
     private Vector2Int boardSize = new Vector2Int(10, 40);
     public TetrominoData[] bag = new TetrominoData[7];
     private int bagIndex;
     public Queue<TetrominoData> queue = new Queue<TetrominoData>();
-    private int BackToBack = 0;
-    private int Combo = 0;
+    private int BackToBack;
+    private int Combo;
     private int totalLines = 0;
     public float DASTime = 0.075f;
     public TextMeshProUGUI totalLinesText;
@@ -33,10 +31,6 @@ public class Board : MonoBehaviour
     public List<Tetromino> CreateBag()
     {
         int bag = Convert.ToInt32(bagGenerator.mt.Next() % 5040);
-        int bagRandom = UnityEngine.Random.Range(0, 5040);
-
-        // get permutation from bagRandom
-
         return Data.allBags[bag];
     }
     public RectInt Bounds {
@@ -57,6 +51,8 @@ public class Board : MonoBehaviour
 
         this.tilemap = GetComponentInChildren<Tilemap>();
         this.activePiece = GetComponentInChildren<Piece>();
+        
+        damageToDo = new List<int>();
 
         for (int i = 0; i < 7; i++) {
             tetrominoes[i].Initialize();
@@ -189,6 +185,11 @@ public class Board : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R))
         {
             UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+        }
+
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            TakeDamage(Random.Range(1,4));
         }
     }
 
@@ -396,9 +397,6 @@ public class Board : MonoBehaviour
             Combo = 0;
         }
         
-
-        
-
         return linesCleared;
     }
 
@@ -418,12 +416,14 @@ public class Board : MonoBehaviour
         return cornercount;
     }
 
-    public int TSpinFacing(Vector3Int position, int rotationIndex){
-        Dictionary<int, Vector2Int[]> dictCorners = new Dictionary<int, Vector2Int[]>{
-            {0, new Vector2Int[] {new Vector2Int(-1, 1), new Vector2Int(1, 1)}},
-            {1, new Vector2Int[] {new Vector2Int(1, 1), new Vector2Int(1, -1)}},
-            {2, new Vector2Int[] {new Vector2Int(1, -1), new Vector2Int(-1, -1)}},
-            {3, new Vector2Int[] {new Vector2Int(-1, -1), new Vector2Int(-1, 1)}}
+    public int TSpinFacing(Vector3Int position, int rotationIndex)
+    {
+        Dictionary<int, Vector2Int[]> dictCorners = new Dictionary<int, Vector2Int[]>
+        {
+            { 0, new Vector2Int[] { new Vector2Int(-1, 1), new Vector2Int(1, 1) } },
+            { 1, new Vector2Int[] { new Vector2Int(1, 1), new Vector2Int(1, -1) } },
+            { 2, new Vector2Int[] { new Vector2Int(1, -1), new Vector2Int(-1, -1) } },
+            { 3, new Vector2Int[] { new Vector2Int(-1, -1), new Vector2Int(-1, 1) } }
         };
 
         int facingcount = 0;
@@ -468,6 +468,58 @@ public class Board : MonoBehaviour
         }
         return false;
     }
-    
+
+    void AddGarbage(int lines)
+    {
+        int hole = Random.Range(0, 9);
+        // move everything up by lines, top to bottom
+        for (int y = Bounds.yMax - lines; y >= Bounds.yMin; y--)
+        {
+            for (int x = Bounds.xMin; x < Bounds.xMax; x++)
+            {
+                TileBase tile = this.tilemap.GetTile(new Vector3Int(x, y - lines, 0));
+                this.tilemap.SetTile(new Vector3Int(x, y, 0), tile);
+            }
+        }
+        
+        // add the garbage
+        for (int y = Bounds.yMin; y < Bounds.yMin + lines; y++)
+        {
+            for (int x = Bounds.xMin; x < Bounds.xMax; x++)
+            {
+                if (x != hole)
+                {
+                    this.tilemap.SetTile(new Vector3Int(x, y, 0), tetrominoes[(int)Tetromino.NullTetromino].tile);
+                }
+            }
+        }
+    }
+    public void TakeDamage(int damage)
+    {
+        damageToDo.Add(damage);
+    }
+
+    public void ApplyDamage()
+    {
+        // apply up to 8 lines at once
+        int doableDamage = 8;
+        while(damageToDo.Count > 0 && doableDamage > 0)
+        {
+            // apply min(damageQueue.first, doableDamage) lines
+            if (damageToDo[0] <= doableDamage)
+            {
+                doableDamage -= damageToDo[0];
+                AddGarbage(damageToDo[0]);
+                damageToDo.RemoveAt(0);
+            }
+            else
+            {
+                damageToDo[0] -= doableDamage;
+                AddGarbage(doableDamage);
+                doableDamage = 0;
+                
+            }
+        }
+    }
 }
 
