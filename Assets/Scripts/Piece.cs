@@ -11,6 +11,13 @@ public class Piece : MonoBehaviour
     public bool tspin { get; private set; }
     public bool tspinmini { get; private set; }
     public bool canHold { get; private set; }
+    public float autoFallTime { get; private set; }
+    public int autoFalls { get; private set; }
+    public float noFallTime { get; private set; }
+    public float totalNoFallTime { get; private set; }
+
+    [SerializeField]
+    private float autoFallInterval;
     private Dictionary<KeyCode, float> startedPressing = new Dictionary<KeyCode, float>();
     private Dictionary<KeyCode, bool> contPressed = new Dictionary<KeyCode, bool>();
     private Dictionary<KeyCode, Vector2Int> keyToVector = new Dictionary<KeyCode, Vector2Int>();
@@ -19,7 +26,8 @@ public class Piece : MonoBehaviour
     {
         canHold = true;
         fillDicts();
-        
+        autoFallTime = Time.time;
+        autoFalls = 0;
     }
 
     private void fillDicts()
@@ -136,12 +144,39 @@ public class Piece : MonoBehaviour
         board.Clear(this);
         checkMove();
         
+        if(!board.IsPositionValid(this, position + Vector3Int.down)) // if not falling
+        {
+            autoFallTime = Time.time;
+            totalNoFallTime += Time.deltaTime;
+            if(noFallTime + autoFallInterval < Time.time || totalNoFallTime > autoFallInterval * 3)
+            {
+                Lock();
+            }
+            autoFalls = 0;
+        }
+        else // if falling
+        {
+            noFallTime = Time.time;
+            if(autoFallTime + autoFallInterval * (autoFalls + 1) < Time.time)
+            {
+                Move(Vector2Int.down);
+                autoFalls++;
+            }
+        }
+
+
         if (Input.GetKey(KeyCode.DownArrow))
         {
             while(Move(Vector2Int.down)) // personal settings - using infinite soft drop for now
             {
                 continue;
             }
+            // reset fall variables
+            autoFallTime = Time.time;
+            autoFalls = 0;
+            noFallTime = Time.time;
+            totalNoFallTime = 0;
+
             // Move(Vector2Int.down);
         }
 
@@ -322,8 +357,12 @@ public class Piece : MonoBehaviour
         // Check for line clears
 
         board.ClearLines(tspin, tspinmini);
-        
 
+        autoFallTime = Time.time;
+        autoFalls = 0;
+        noFallTime = Time.time;
+        totalNoFallTime = 0;
+        
         board.SpawnPiece();
     }
     public bool Move(Vector2Int translation)

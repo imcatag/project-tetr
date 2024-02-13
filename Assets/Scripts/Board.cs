@@ -16,7 +16,7 @@ public class Board : MonoBehaviour
     public Ghost ghost { get; private set; }
     public Tetromino heldTetromino { get; private set; }
     public Boolean hasHeld { get; private set; }
-    private Vector3Int spawnPosition = new Vector3Int(4, 19, 0);
+    private Vector3Int spawnPosition = new Vector3Int(4, 20, 0);
     private Vector2Int boardSize = new Vector2Int(10, 40);
     public TetrominoData[] bag = new TetrominoData[7];
     private int bagIndex;
