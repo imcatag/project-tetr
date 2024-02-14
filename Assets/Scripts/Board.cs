@@ -380,8 +380,11 @@ public class Board : MonoBehaviour, Attackable
             extraText.CrossFadeAlpha(1, 0, false);
             extraText.CrossFadeAlpha(0, 2, false);
 
-            if(allClear) Debug.Log("ALL CLEAR");
-
+            if(allClear) // add " PC" to extra
+            {
+                extraText.text += " PC";
+            }
+            
             if(BackToBack > 0){
                 B2BText.text = "B2B: " + BackToBack.ToString();
             }

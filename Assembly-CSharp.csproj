@@ -46,17 +46,31 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Comms\Scripts\HelloClient.cs" />
+     <Compile Include="Assets\StandaloneFileBrowser\Sample\CanvasSampleOpenFileTextMultiple.cs" />
+     <Compile Include="Assets\StandaloneFileBrowser\StandaloneFileBrowserWindows.cs" />
      <Compile Include="Assets\Scripts\BotBoard.cs" />
      <Compile Include="Assets\Scripts\BotPiece.cs" />
      <Compile Include="Assets\Scripts\BagGeneratorMono.cs" />
      <Compile Include="Assets\Scripts\GhostPiece.cs" />
      <Compile Include="Assets\Scripts\Ghost.cs" />
+     <Compile Include="Assets\StandaloneFileBrowser\StandaloneFileBrowser.cs" />
      <Compile Include="Assets\Scripts\Tetromino.cs" />
+     <Compile Include="Assets\StandaloneFileBrowser\Sample\CanvasSampleSaveFileImage.cs" />
      <Compile Include="Assets\Comms\Scripts\HelloRequester.cs" />
+     <Compile Include="Assets\StandaloneFileBrowser\IStandaloneFileBrowser.cs" />
      <Compile Include="Assets\Scripts\Board.cs" />
      <Compile Include="Assets\Comms\Scripts\RunAbleThread.cs" />
+     <Compile Include="Assets\StandaloneFileBrowser\StandaloneFileBrowserLinux.cs" />
      <Compile Include="Assets\Scripts\Attackable.cs" />
+     <Compile Include="Assets\StandaloneFileBrowser\Sample\CanvasSampleSaveFileText.cs" />
+     <Compile Include="Assets\StandaloneFileBrowser\Sample\CanvasSampleOpenFileText.cs" />
+     <Compile Include="Assets\StandaloneFileBrowser\Sample\BasicSample.cs" />
+     <Compile Include="Assets\Scripts\TetrisBotProtocol\BotRunner.cs" />
+     <Compile Include="Assets\Scripts\TetrisBotProtocol\BotSelection.cs" />
+     <Compile Include="Assets\StandaloneFileBrowser\Sample\CanvasSampleOpenFileImage.cs" />
+     <Compile Include="Assets\StandaloneFileBrowser\StandaloneFileBrowserMac.cs" />
      <Compile Include="Assets\Scripts\Data.cs" />
+     <Compile Include="Assets\StandaloneFileBrowser\StandaloneFileBrowserEditor.cs" />
      <Compile Include="Assets\Scripts\Piece.cs" />
      <Folder Include="Assets" />
      <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
@@ -65,7 +79,9 @@
      <Folder Include="Assets\Comms" />
      <Folder Include="Assets\TextMesh Pro\Resources\Sprite Assets" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
+     <Folder Include="Assets\StandaloneFileBrowser\Plugins\Linux" />
      <Folder Include="Assets\Comms\Plugins" />
+     <Folder Include="Assets\StandaloneFileBrowser\Sample" />
      <Folder Include="Assets\TextMesh Pro\Resources\Fonts &amp; Materials" />
      <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
@@ -73,6 +89,8 @@
      <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
      <Folder Include="Assets\TextMesh Pro" />
      <Folder Include="Assets\Scenes" />
+     <Folder Include="Assets\StandaloneFileBrowser" />
+     <Folder Include="Assets\Scripts\TetrisBotProtocol" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
      <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
@@ -89,6 +107,8 @@
      <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
      <Folder Include="Assets\Comms\Scripts" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
+     <Folder Include="Assets\StandaloneFileBrowser\Plugins\Linux\x86_64" />
+     <Folder Include="Assets\StandaloneFileBrowser\Plugins" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
      <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
@@ -355,8 +375,14 @@
      <Reference Include="AsyncIO">
      <HintPath>C:\Users\cat\Desktop\fromgit\project-tetr\Assets\Comms\Plugins\AsyncIO.dll</HintPath>
      </Reference>
+     <Reference Include="Ookii.Dialogs">
+     <HintPath>C:\Users\cat\Desktop\fromgit\project-tetr\Assets\StandaloneFileBrowser\Plugins\Ookii.Dialogs.dll</HintPath>
+     </Reference>
      <Reference Include="Unity.VisualScripting.Antlr3.Runtime">
      <HintPath>C:\Users\cat\Desktop\fromgit\project-tetr\Library\PackageCache\com.unity.visualscripting@1.9.1\Runtime\VisualScripting.Flow\Dependencies\NCalc\Unity.VisualScripting.Antlr3.Runtime.dll</HintPath>
+     </Reference>
+     <Reference Include="System.Windows.Forms">
+     <HintPath>C:\Users\cat\Desktop\fromgit\project-tetr\Assets\StandaloneFileBrowser\Plugins\System.Windows.Forms.dll</HintPath>
      </Reference>
      <Reference Include="netstandard">
      <HintPath>C:\Program Files\Unity\Hub\Editor\2022.3.14f1\Editor\Data\NetStandard\ref\2.1.0\netstandard.dll</HintPath>
@@ -858,6 +884,26 @@
      </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="UniTask.Addressables.csproj">
+      <Project>{0d561c95-8eaa-491e-e787-fb3d3cbc3605}</Project>
+      <Name>UniTask.Addressables</Name>
+    </ProjectReference>
+    <ProjectReference Include="UniTask.Linq.csproj">
+      <Project>{a16b6f82-0866-7fa2-bc4f-74e5af462bfa}</Project>
+      <Name>UniTask.Linq</Name>
+    </ProjectReference>
+    <ProjectReference Include="UniTask.csproj">
+      <Project>{62e33917-5737-b950-fdad-50a00a883183}</Project>
+      <Name>UniTask</Name>
+    </ProjectReference>
+    <ProjectReference Include="UniTask.TextMeshPro.csproj">
+      <Project>{99cfbf25-50fd-05de-6108-7ff9317c1288}</Project>
+      <Name>UniTask.TextMeshPro</Name>
+    </ProjectReference>
+    <ProjectReference Include="UniTask.DOTween.csproj">
+      <Project>{26a2a95c-90a0-d5db-4a20-06fed7377853}</Project>
+      <Name>UniTask.DOTween</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

@@ -179,12 +179,7 @@ public class Piece : MonoBehaviour
 
             // Move(Vector2Int.down);
         }
-
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            HardDrop();
-        }
-
+        
         if (Input.GetKeyDown(KeyCode.A))
         {
             Rotate(-1);
@@ -198,11 +193,14 @@ public class Piece : MonoBehaviour
         {
             Flip();
         }
-        if(Input.GetKeyDown(KeyCode.LeftShift))
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            HardDrop();
+        }
+        else if(Input.GetKeyDown(KeyCode.LeftShift))
         {
             Hold();
         }
-
         board.Set(this);
         
     }

@@ -478,7 +478,6 @@ public class BotBoard : MonoBehaviour, Attackable
         {
             for (int x = Bounds.xMin; x < Bounds.xMax; x++)
             {
-                Debug.Log("Adding garbage at " + x + ", " + y);
                 if (x != hole)
                 {
                     this.tilemap.SetTile(new Vector3Int(x, y, 0), tetrominoes[(int)Tetromino.NullTetromino].tile);
