@@ -12,7 +12,7 @@ public class BotBoard : MonoBehaviour, Attackable
     public BotPiece activePiece { get; private set; }
     public Tetromino heldTetromino { get; private set; }
     public Boolean hasHeld { get; private set; }
-    private Vector3Int spawnPosition = new Vector3Int(4, 19, 0);
+    private Vector3Int spawnPosition = new Vector3Int(4, 20, 0);
     private Vector2Int boardSize = new Vector2Int(10, 40);
     public TetrominoData[] bag = new TetrominoData[7];
     private int bagIndex;
@@ -178,7 +178,8 @@ public class BotBoard : MonoBehaviour, Attackable
 
     public void Update()
     {
-
+        // apply damage
+        ApplyDamage();
     }
 
     public void Clear(BotPiece piece)
@@ -477,6 +478,7 @@ public class BotBoard : MonoBehaviour, Attackable
         {
             for (int x = Bounds.xMin; x < Bounds.xMax; x++)
             {
+                Debug.Log("Adding garbage at " + x + ", " + y);
                 if (x != hole)
                 {
                     this.tilemap.SetTile(new Vector3Int(x, y, 0), tetrominoes[(int)Tetromino.NullTetromino].tile);

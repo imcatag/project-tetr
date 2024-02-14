@@ -304,7 +304,7 @@ GameObject:
   - component: {fileID: 247523757}
   - component: {fileID: 247523758}
   m_Layer: 0
-  m_Name: Board
+  m_Name: BotBoard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -366,6 +366,8 @@ MonoBehaviour:
     tile: {fileID: 11400000, guid: 5048481f65cbb1f4bab84cb74b8811d4, type: 2}
   - tetromino: 6
     tile: {fileID: 11400000, guid: b5b5b3f17b7b2174e9252f5c2690aa26, type: 2}
+  - tetromino: 7
+    tile: {fileID: 11400000, guid: bc81bae8b70156844abb08cd745a50a1, type: 2}
   bag:
   - tetromino: 0
     tile: {fileID: 0}
@@ -2681,6 +2683,7 @@ MonoBehaviour:
   extraText: {fileID: 595375706}
   B2BText: {fileID: 695943926}
   comboText: {fileID: 826258142}
+  enemyBotBoard: {fileID: 247523757}
 --- !u!114 &1786666837
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -357,6 +357,7 @@ public class Piece : MonoBehaviour
 
         var cleared = board.ClearLines(tspin, tspinmini);
         
+        // If no lines were cleared, apply damage
         if(cleared == 0)
         {
             board.ApplyDamage();

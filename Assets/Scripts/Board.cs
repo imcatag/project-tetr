@@ -28,6 +28,8 @@ public class Board : MonoBehaviour, Attackable
     public TextMeshProUGUI B2BText;
     public TextMeshProUGUI comboText;
     private BagGenerator bagGenerator = new BagGenerator();
+    [SerializeField]
+    public BotBoard enemyBotBoard;
     public List<Tetromino> CreateBag()
     {
         int bag = Convert.ToInt32(bagGenerator.mt.Next() % 5040);
@@ -60,7 +62,7 @@ public class Board : MonoBehaviour, Attackable
 
         // get two bags and put them in the queue
         List<Tetromino> bag1 = CreateBag();
-        for (int i = 0; i < bag1.Count; i++)
+        for (int i = 0; i < bag1.Count; i++)    
         {
             var td = tetrominoes[(int)bag1[i]];
             queue.Enqueue(td);
@@ -241,7 +243,8 @@ public class Board : MonoBehaviour, Attackable
 
         return true;
     }
-
+    
+    
     public int ClearLines(bool tspin, bool tspinmini)
     {
         // go through each row and check if it is full
@@ -296,6 +299,8 @@ public class Board : MonoBehaviour, Attackable
             }
         }
 
+        var sentLines = 0;  // lines to send to the enemy
+
         if (linesCleared > 0)
         {
             Combo++;
@@ -320,45 +325,51 @@ public class Board : MonoBehaviour, Attackable
                     default:
                         extraText.text = "T-Spin " + linesCleared.ToString() + " Lines";
                         break;
-                }
+                }    
+                sentLines = 2 * linesCleared;
                 BackToBack++;
             }
             else if (tspinmini)
-                {
-                    switch (linesCleared){
-                        case 1:
-                            extraText.text = "T-Spin Mini Single";
-                            break;
-                        case 2:
-                            extraText.text = "T-Spin Mini Double";
-                            break;
-                        case 3:
-                            extraText.text = "T-Spin Mini Triple";
-                            break;
-                        default:
-                            extraText.text = "T-Spin Mini " + linesCleared.ToString() + " Lines";
-                            break;
-                    }
-                    BackToBack++;
+            {
+                switch (linesCleared){
+                    case 1:
+                        extraText.text = "T-Spin Mini Single";
+                        break;
+                    case 2:
+                        extraText.text = "T-Spin Mini Double";
+                        break;
+                    case 3:
+                        extraText.text = "T-Spin Mini Triple";
+                        break;
+                    default:
+                        extraText.text = "T-Spin Mini " + linesCleared.ToString() + " Lines";
+                        break;
                 }
+                sentLines = linesCleared;
+                BackToBack++;
+            }
             else
             {
                 switch (linesCleared){
                     case 1:
                         extraText.text = "Single";
                         BackToBack = 0;
+                        sentLines = 0;
                         break;
                     case 2:
                         extraText.text = "Double";
                         BackToBack = 0;
+                        sentLines = 1;
                         break;
                     case 3:
                         extraText.text = "Triple";
                         BackToBack = 0;
+                        sentLines = 2;
                         break;
                     case 4:
                         extraText.text = "Quad";
                         BackToBack++;
+                        sentLines = 4;
                         break;
                     default:
                         extraText.text = linesCleared.ToString() + " Lines";
@@ -395,6 +406,38 @@ public class Board : MonoBehaviour, Attackable
             }
             
             Combo = 0;
+        }
+        
+        if(linesCleared > 0)
+        {
+            var actualLines = sentLines + Combo * linesCleared / 4 + b2bmap(BackToBack);
+            
+            if (allClear) actualLines += 10;
+
+            int b2bmap(int value)
+            {
+                if (value >= 0 && value <= 1)
+                    return 0;
+                else if (value >= 2 && value <= 3)
+                    return 1;
+                else if (value >= 4 && value <= 8)
+                    return 2;
+                else if (value >= 9 && value <= 24)
+                    return 3;
+                else if (value >= 25 && value <= 67)
+                    return 4;
+                else if (value >= 68 && value <= 185)
+                    return 5;
+                else if (value >= 186 && value <= 504)
+                    return 6;
+                else if (value >= 505 && value <= 1370)
+                    return 7;
+                else
+                    return 8;
+            }
+
+            if(actualLines > 0)
+                enemyBotBoard.TakeDamage(actualLines);
         }
         
         return linesCleared;
