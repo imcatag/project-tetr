@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using Random = UnityEngine.Random;
 
-public class BotBoard : MonoBehaviour, Attackable
+public class BotBoard : MonoBehaviour, IAttackable
 {
     public TetrominoData[] tetrominoes;
     public Tilemap tilemap { get; private set; }
@@ -188,8 +188,7 @@ public class BotBoard : MonoBehaviour, Attackable
 
     public void Update()
     {
-        // apply damage
-        ApplyDamage();
+        
     }
 
     public void Clear(BotPiece piece)
@@ -395,8 +394,13 @@ public class BotBoard : MonoBehaviour, Attackable
                     return 8;
             }
 
-            if(actualLines > 0)
-                enemyBoard.TakeDamage(actualLines);
+            if (actualLines > 0)
+            {
+                // counter damage, then send rest
+                var leftToSend = CounterDamage(actualLines);
+                
+                enemyBoard.TakeDamage(leftToSend);
+            }
         }
         
         return linesCleared;
@@ -432,7 +436,24 @@ public class BotBoard : MonoBehaviour, Attackable
         damageToDo.Add(damage);
     }
 
-    public void ApplyDamage()
+    public int CounterDamage(int counterable) // returns damage left to send
+    {
+        while (counterable > 0 && damageToDo.Count > 0)
+        {
+            if (damageToDo[0] <= counterable)
+            {
+                counterable -= damageToDo[0];
+                damageToDo.RemoveAt(0);
+            }
+            else
+            {
+                damageToDo[0] -= counterable;
+                counterable = 0;
+            }
+        }
+        return counterable;
+    }
+    public bool ApplyDamage()
     {
         // apply up to 8 lines at once
         int doableDamage = 8;
@@ -453,6 +474,8 @@ public class BotBoard : MonoBehaviour, Attackable
                 
             }
         }
+
+        return doableDamage != 8;
     }
 
     public StartMessage ToStartMessage()
@@ -494,17 +517,17 @@ public class BotBoard : MonoBehaviour, Attackable
         return startMessage;
     }
 
-    public bool MakeMove(BotSuggestion suggestion)
+    public MoveResults MakeMove(BotSuggestion suggestion)
     {
         // see if piece is the same as active piece
         // if yes, apply the move
         // if no, hold then apply the move
-        bool firstHold = false;
+        var results = new MoveResults();
         if(activePiece.data.tetromino.ToString() != suggestion.moves[0].location.type)
         {
             // if hold empty
             if(!hasHeld)
-                firstHold = true;
+                results.firstHold = true;
             Hold();
         }
         // apply the move
@@ -549,8 +572,19 @@ public class BotBoard : MonoBehaviour, Attackable
         // lock the piece
         var tspin = suggestion.moves[0].spin == "full";
         var tspinmini = suggestion.moves[0].spin == "mini";
-        activePiece.Lock(tspin, tspinmini);
-        return firstHold;
+        var hasCleared = activePiece.Lock(tspin, tspinmini);
+        
+        // apply damage if no line clears
+        if (!hasCleared)
+        {
+            var damaged = ApplyDamage();
+            if (damaged)
+            {
+                results.garbageRecieved = true;
+            }
+        }
+
+        return results;
     }
 
     public string GetQueuePiece(int index)

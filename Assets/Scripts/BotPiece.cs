@@ -53,7 +53,7 @@ public class BotPiece : MonoBehaviour
             board.Hold();
         canHold = false;
     }
-    public void Lock(bool tspin = false, bool tspinmini = false)
+    public bool Lock(bool tspin = false, bool tspinmini = false)
     {
         board.Set(this);
 
@@ -62,8 +62,10 @@ public class BotPiece : MonoBehaviour
         // Check for line clears
 
         
-        board.ClearLines(tspin, tspinmini);
+        var linesCleared = board.ClearLines(tspin, tspinmini);
         board.SpawnPiece();
+        
+        return linesCleared > 0;
     }
 
     public void MoveTo(Vector2Int location, int orientation)

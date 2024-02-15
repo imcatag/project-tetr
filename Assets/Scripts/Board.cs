@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using Random = UnityEngine.Random;
 
-public class Board : MonoBehaviour, Attackable
+public class Board : MonoBehaviour, IAttackable
 {
     public TetrominoData[] tetrominoes;
     public Tilemap tilemap { get; private set; }
@@ -440,7 +440,12 @@ public class Board : MonoBehaviour, Attackable
             }
 
             if(actualLines > 0)
-                enemyBotBoard.TakeDamage(actualLines);
+            {
+                // counter damage, then send rest
+                var leftToSend = CounterDamage(actualLines);
+                enemyBotBoard.TakeDamage(leftToSend);
+            }
+            
         }
         
         return linesCleared;
@@ -514,7 +519,23 @@ public class Board : MonoBehaviour, Attackable
         }
         return false;
     }
-
+    public int CounterDamage(int counterable) // returns damage left to send
+    {
+        while (counterable > 0 && damageToDo.Count > 0)
+        {
+            if (damageToDo[0] <= counterable)
+            {
+                counterable -= damageToDo[0];
+                damageToDo.RemoveAt(0);
+            }
+            else
+            {
+                damageToDo[0] -= counterable;
+                counterable = 0;
+            }
+        }
+        return counterable;
+    }
     void AddGarbage(int lines)
     {
         int hole = Random.Range(0, 9);
@@ -545,7 +566,7 @@ public class Board : MonoBehaviour, Attackable
         damageToDo.Add(damage);
     }
 
-    public void ApplyDamage()
+    public bool ApplyDamage()
     {
         // apply up to 8 lines at once
         int doableDamage = 8;
@@ -566,6 +587,8 @@ public class Board : MonoBehaviour, Attackable
                 
             }
         }
+        
+        return doableDamage != 8;
     }
 }
 

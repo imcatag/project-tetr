@@ -13,7 +13,9 @@ namespace TetrisBotProtocol
 
     public class MoveResults
     {
-        
+        public bool firstHold;
+        public bool gameover;
+        public bool garbageRecieved;
     }
     
     // frontend to bot messages
@@ -191,7 +193,7 @@ namespace TetrisBotProtocol
             while (true)
             {
                 // wait for .1s
-                // await UniTask.Delay(100);
+                await UniTask.Delay(500);
                 // send suggest message to the bot
                 
                 Debug.Log("F: " + suggestJson);
@@ -211,12 +213,12 @@ namespace TetrisBotProtocol
                 var suggestion = JsonConvert.DeserializeObject<BotSuggestion>(line);
                 
                 // make move on board
-                bool firstHold = botBoard.MakeMove(suggestion);
+                var results = botBoard.MakeMove(suggestion);
 
                 string newPiece;
                 NewPieceMessage newPieceMessage = new NewPieceMessage();
                 string newPieceJson;
-                if (firstHold)
+                if (results.firstHold)
                 {
                     // send new_piece message to bot
                     newPiece = botBoard.GetQueuePiece(3);
@@ -234,15 +236,25 @@ namespace TetrisBotProtocol
                 Debug.Log("F: " + newPieceJson);
                 await stdin.WriteLineAsync(newPieceJson);
                 
-                // send play message to frontend
-                
-                var playMessage = new PlayMessage
+                // if garbage recieved, send a start message to the bot
+                // else send a play message to the bot
+                if(!results.garbageRecieved)
                 {
-                    move = suggestion.moves[0],
-                };
-                var playJson = JsonConvert.SerializeObject(playMessage);
-                Debug.Log("F: " + playJson);
-                await stdin.WriteLineAsync(playJson);
+                    var playMessage = new PlayMessage
+                    {
+                        move = suggestion.moves[0],
+                    };
+                    var playJson = JsonConvert.SerializeObject(playMessage);
+                    Debug.Log("F: " + playJson);
+                    await stdin.WriteLineAsync(playJson);
+                }
+                else
+                {
+                    startMessage = botBoard.ToStartMessage();
+                    json = JsonConvert.SerializeObject(startMessage);
+                    Debug.Log("F: " + json);
+                    await stdin.WriteLineAsync(json);
+                }
                 
             }
         }
