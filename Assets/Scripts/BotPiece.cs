@@ -54,136 +54,8 @@ public class BotPiece : MonoBehaviour
         if(canHold)
             board.Hold();
         canHold = false;
-
     }
-    private bool Flip(){
-        var newrotationIndex = Wrap(this.rotationIndex + 2, 0, 4);
-
-        Vector2Int[] newCells = Data.Cells[data.tetromino][newrotationIndex];
-
-        //create copy of newcells that is vector3Int[]
-
-        Vector3Int[] newCells3 = new Vector3Int[newCells.Length];
-
-        for (int i = 0; i < newCells.Length; i++){
-            Vector2Int cell = newCells[i];
-            Vector3Int newCell = new Vector3Int(cell.x, cell.y, 0);
-            newCells3[i] = newCell;
-        }
-
-        Vector2Int[] offsetList = Data.Flips[rotationIndex];
-
-        // go through each offset, create a copy of the rotated cells, and add the offset to each cell, then check if the new cells are valid
-
-        for (int i = 0; i < offsetList.Length; i++){
-            Vector2Int offset = offsetList[i];
-            Vector3Int[] rotatedCellsCopy = new Vector3Int[newCells.Length];
-            for (int j = 0; j < newCells.Length; j++){
-                rotatedCellsCopy[j] = (Vector3Int) newCells[j] + (Vector3Int)offset;
-            }
-            bool valid = board.IsRotationValid(rotatedCellsCopy, this.position);
-            if (valid){
-                // Debug.Log("Valid" + (offset));
-                this.rotationIndex = newrotationIndex;
-                this.cells = newCells3;
-                this.position += (Vector3Int)offset;
-                // islastactionrotate = true;
-                return true;
-            }
-        }
-
-        return false;
-    }
-    private bool Rotate (int direction){
-
-        var newrotationIndex = Wrap(this.rotationIndex + direction, 0, 4);
-
-        // Debug.Log("Position: " + (position) + " // Direction: " + (direction) + " // OldRotationIndex: " + (rotationIndex) + " // NewRotationIndex: " + (newrotationIndex));
-
-        Vector2Int[] newCells = Data.Cells[data.tetromino][newrotationIndex];
-
-        //create copy of newcells that is vector3Int[]
-
-        Vector3Int[] newCells3 = new Vector3Int[newCells.Length];
-
-        for (int i = 0; i < newCells.Length; i++){
-            Vector2Int cell = newCells[i];
-            Vector3Int newCell = new Vector3Int(cell.x, cell.y, 0);
-            newCells3[i] = newCell;
-        }
-
-        Vector2Int[] offsetList;
-
-        if(direction == 1){
-            if(data.tetromino == Tetromino.I)
-                offsetList = Data.WallKicksI[rotationIndex];
-            else
-                offsetList = Data.WallKicksJLOSTZ[rotationIndex];
-        }
-        else{
-            if(data.tetromino == Tetromino.I)
-                offsetList = Data.CounterWallKicksI[rotationIndex];
-            else
-                offsetList = Data.CounterWallKicksJLOSTZ[rotationIndex];
-        }
-        
-
-        // go through each offset, create a copy of the rotated cells, and add the offset to each cell, then check if the new cells are valid
-        for (int i = 0; i < offsetList.Length; i++){
-            Vector2Int offset = offsetList[i];
-            Vector3Int[] rotatedCellsCopy = new Vector3Int[newCells.Length];
-            for (int j = 0; j < newCells.Length; j++){
-                rotatedCellsCopy[j] = (Vector3Int) newCells[j] + (Vector3Int)offset;
-            }
-            bool valid = board.IsRotationValid(rotatedCellsCopy, this.position);
-            if (valid){
-                // Debug.Log("Valid" + (offset));
-
-                tspin = false;
-                tspinmini = false;
-
-                if(data.tetromino == Tetromino.T){
-                    // check for fin and overhang t spin -- if the last kick was used for a T in rotationIndex 2 or 0
-                    if((rotationIndex == 2 || rotationIndex == 0) && (i == 4)){
-                        tspin = true;
-                    }
-                    // else if there is 3 corners filled
-                    else if(board.TSpinCorners(this.position + (Vector3Int)offset) >= 3){
-                        // depending on rotation index, check if the corners the t is facing are filled
-                        if (board.TSpinFacing(this.position + (Vector3Int)offset, newrotationIndex) >= 2){
-                            tspin = true;
-                        }
-                        else{
-                            tspinmini = true;
-                        }
-                    }
-                }
-                
-                // if(tspin) Debug.Log("TSPIN");
-                // if(tspinmini) Debug.Log("TSPINMINI");
-                this.rotationIndex = newrotationIndex;
-                this.cells = newCells3;
-                this.position += (Vector3Int)offset;
-                // islastactionrotate = true;
-                return true;
-            }
-        }
-
-        return false;
-
-    }
-    
-    private void HardDrop()
-    {
-        while (Move(Vector2Int.down))
-        {
-            continue;
-        }
-
-        Lock();
-    }
-
-    private void Lock()
+    public void Lock()
     {
         board.Set(this);
 
@@ -191,28 +63,27 @@ public class BotPiece : MonoBehaviour
 
         // Check for line clears
 
-        board.ClearLines(tspin, tspinmini);
         
-
+        board.ClearLines(tspin, tspinmini);
         board.SpawnPiece();
     }
-    public bool Move(Vector2Int translation)
+
+    public void MoveTo(Vector2Int location, int orientation)
     {
-        // Debug.Log("OldPosition" + (position));
-
-        Vector3Int newPosition = position + (Vector3Int)translation;
-
-        // Debug.Log("NewPosition" + (newPosition));
-
-        bool valid = board.IsPositionValid(this, newPosition);
-        if (valid)
-        {
-            position = newPosition;
-            tspin = false;
-            tspinmini = false;
-            // islastactionrotate = false;
+        Vector3Int newPosition = (Vector3Int)location;
+        position = newPosition;
+        rotationIndex = orientation;
+        // set cells
+        Vector2Int[] newCells = Data.Cells[data.tetromino][rotationIndex];
+        
+        //create copy of newcells that is vector3Int[]
+        Vector3Int[] newCells3 = new Vector3Int[newCells.Length];
+        for (int i = 0; i < newCells.Length; i++){
+            Vector2Int cell = newCells[i];
+            Vector3Int newCell = new Vector3Int(cell.x, cell.y, 0);
+            newCells3[i] = newCell;
         }
-        return valid;
+        cells = newCells3;
         
     }
 }

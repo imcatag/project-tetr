@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
+using TetrisBotProtocol;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -12,7 +14,8 @@ public class BotBoard : MonoBehaviour, Attackable
     public BotPiece activePiece { get; private set; }
     public Tetromino heldTetromino { get; private set; }
     public Boolean hasHeld { get; private set; }
-    private Vector3Int spawnPosition = new Vector3Int(4, 20, 0);
+    private Vector3Int spawnPosition = new Vector3Int(-4, 14, 0);
+    private Vector3Int obstructedCheck = new Vector3Int(4, 20, 0);
     private Vector2Int boardSize = new Vector2Int(10, 40);
     public TetrominoData[] bag = new TetrominoData[7];
     private int bagIndex;
@@ -46,8 +49,6 @@ public class BotBoard : MonoBehaviour, Attackable
     }
     private void Awake()
     {
-        Application.targetFrameRate = 0;
-
         this.tilemap = GetComponentInChildren<Tilemap>();
         this.activePiece = GetComponentInChildren<BotPiece>();
         
@@ -73,6 +74,14 @@ public class BotBoard : MonoBehaviour, Attackable
 
     public void SpawnPiece()
     {
+        // clear the spawn area
+        for (int i = -6; i < 0; i++)
+        {
+            for (int j = 13; j < 17; j++)
+            {
+                tilemap.SetTile(new Vector3Int(i, j, 0), null);
+            }
+        }
         // if queue has < 7 pieces, get a new bag and put it in the queue
         if (queue.Count < 7)
         {
@@ -113,7 +122,7 @@ public class BotBoard : MonoBehaviour, Attackable
 
         for(int i = 0; i < data.cells.Length; i++)
         {
-            Vector3Int tilePosition = (Vector3Int)data.cells[i] + spawnPosition;
+            Vector3Int tilePosition = (Vector3Int)data.cells[i] + obstructedCheck;
             if (this.tilemap.HasTile(tilePosition))
             {
                 Debug.Log("Game Over");
@@ -151,7 +160,7 @@ public class BotBoard : MonoBehaviour, Attackable
         // unset the tiles from -6, 14 to 1, 20
         for (int i = -6; i < 0; i++)
         {
-            for (int j = 14; j < 21; j++)
+            for (int j = 18; j < 21; j++)
             {
                 tilemap.SetTile(new Vector3Int(i, j, 0), null);
             }
@@ -511,6 +520,107 @@ public class BotBoard : MonoBehaviour, Attackable
                 
             }
         }
+    }
+
+    public StartMessage ToStartMessage()
+    {
+        StartMessage startMessage = new StartMessage();
+        
+        if (hasHeld)
+        {
+            startMessage.hold = heldTetromino.ToString();
+        }
+        else
+        {
+            startMessage.hold = null;
+        }
+        
+        // queue is current piece, then next 5 pieces
+        startMessage.queue = new string[6];
+        startMessage.queue[0] = activePiece.data.tetromino.ToString();
+        
+        for(int i = 0; i < 5; i++)
+        {
+            startMessage.queue[i + 1] = queue.ToArray()[i].tetromino.ToString();
+        }
+        
+        startMessage.combo = Combo;
+        startMessage.back_to_back = BackToBack > 0;
+        startMessage.b2b_counter = BackToBack;
+        startMessage.board = new List<string[]>();
+        // set capacity to 40
+        startMessage.board.Capacity = 40;
+        for (int i = 0; i < 40; i++)
+        {
+            startMessage.board.Add(new string[10]);
+            for (int j = 0; j < 10; j++)
+            {
+                startMessage.board[i][j] = this.tilemap.HasTile(new Vector3Int(j, i, 0)) ? "G" : null;
+            }
+        }
+        return startMessage;
+    }
+
+    public bool MakeMove(BotSuggestion suggestion)
+    {
+        // see if piece is the same as active piece
+        // if yes, apply the move
+        // if no, hold then apply the move
+        bool firstHold = false;
+        if(activePiece.data.tetromino.ToString() != suggestion.moves[0].location.type)
+        {
+            // if hold empty
+            if(!hasHeld)
+                firstHold = true;
+            Hold();
+        }
+        // apply the move
+        Vector2Int where = new Vector2Int();
+        
+        // convert rotation from north, east, south, west to 0, 1, 2, 3
+        int orientation;
+        int Ioffsetx = 0, Ioffsety = 0;
+        switch (suggestion.moves[0].location.orientation)
+        {
+            case "north":
+                orientation = 0;
+                Ioffsety = -1;
+                break;
+            case "east":
+                orientation = 1;
+                Ioffsetx = -1;
+                Ioffsety = -1;
+                break;
+            case "south":
+                orientation = 2;
+                Ioffsetx = -1;
+                break;
+            case "west":
+                orientation = 3;
+                break;
+            default:
+                orientation = 0;
+                break;
+        }
+
+        where.x = suggestion.moves[0].location.x;
+        where.y = suggestion.moves[0].location.y;
+        
+        if(activePiece.data.tetromino == Tetromino.I)
+        {
+            where.x += Ioffsetx;
+            where.y += Ioffsety;
+        }
+        activePiece.MoveTo(where, orientation);
+        
+        // lock the piece
+        activePiece.Lock();
+        return firstHold;
+    }
+
+    public string GetQueuePiece(int index)
+    {
+        return queue.ToArray()[index].tetromino.ToString();
     }
 }
 
