@@ -9,8 +9,14 @@ using Debug = UnityEngine.Debug;
 
 namespace TetrisBotProtocol
 {
-    // frontend to bot messages
+    // utility
 
+    public class MoveResults
+    {
+        
+    }
+    
+    // frontend to bot messages
     public class SimpleTypeMessage
     {
         public string type;
@@ -52,8 +58,6 @@ namespace TetrisBotProtocol
         public string type = "play";
         public BotMove move;
     }
-
-
 
     // bot to frontend messages
     public class Location
@@ -187,7 +191,7 @@ namespace TetrisBotProtocol
             while (true)
             {
                 // wait for .1s
-                await UniTask.Delay(100);
+                // await UniTask.Delay(100);
                 // send suggest message to the bot
                 
                 Debug.Log("F: " + suggestJson);

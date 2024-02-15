@@ -30,6 +30,7 @@ public class BotBoard : MonoBehaviour, Attackable
     public TextMeshProUGUI comboText;
     private BagGenerator bagGenerator = new BagGenerator();
     public List<int> damageToDo { get; set; }
+    public Board enemyBoard;
     public List<Tetromino> CreateBag()
     {
         int bag = Convert.ToInt32(bagGenerator.mt.Next() % 5040);
@@ -200,46 +201,6 @@ public class BotBoard : MonoBehaviour, Attackable
         }
     }
 
-    public bool IsPositionValid(BotPiece piece, Vector3Int position)
-    {
-        for (int i = 0; i < piece.cells.Length; i++)
-        {
-            Vector3Int tilePosition = piece.cells[i] + position;
-            if (this.tilemap.HasTile(tilePosition))
-            {
-                return false;
-            }
-
-            if (!Bounds.Contains((Vector2Int)tilePosition))
-            {
-                return false;
-            }
-
-        }
-
-        return true;
-    }
-
-    public bool IsRotationValid(Vector3Int[] cells, Vector3Int position)
-    {
-        for (int i = 0; i < cells.Length; i++)
-        {
-            Vector3Int tilePosition = cells[i] + position;
-            if (this.tilemap.HasTile(tilePosition))
-            {
-                return false;
-            }
-
-            if (!Bounds.Contains((Vector2Int)tilePosition))
-            {
-                return false;
-            }
-
-        }
-
-        return true;
-    }
-
     public int ClearLines(bool tspin, bool tspinmini)
     {
         // go through each row and check if it is full
@@ -294,6 +255,8 @@ public class BotBoard : MonoBehaviour, Attackable
             }
         }
 
+        var sentLines = 0;  // lines to send to the enemy
+
         if (linesCleared > 0)
         {
             Combo++;
@@ -318,45 +281,51 @@ public class BotBoard : MonoBehaviour, Attackable
                     default:
                         extraText.text = "T-Spin " + linesCleared.ToString() + " Lines";
                         break;
-                }
+                }    
+                sentLines = 2 * linesCleared;
                 BackToBack++;
             }
             else if (tspinmini)
-                {
-                    switch (linesCleared){
-                        case 1:
-                            extraText.text = "T-Spin Mini Single";
-                            break;
-                        case 2:
-                            extraText.text = "T-Spin Mini Double";
-                            break;
-                        case 3:
-                            extraText.text = "T-Spin Mini Triple";
-                            break;
-                        default:
-                            extraText.text = "T-Spin Mini " + linesCleared.ToString() + " Lines";
-                            break;
-                    }
-                    BackToBack++;
+            {
+                switch (linesCleared){
+                    case 1:
+                        extraText.text = "T-Spin Mini Single";
+                        break;
+                    case 2:
+                        extraText.text = "T-Spin Mini Double";
+                        break;
+                    case 3:
+                        extraText.text = "T-Spin Mini Triple";
+                        break;
+                    default:
+                        extraText.text = "T-Spin Mini " + linesCleared.ToString() + " Lines";
+                        break;
                 }
+                sentLines = linesCleared;
+                BackToBack++;
+            }
             else
             {
                 switch (linesCleared){
                     case 1:
                         extraText.text = "Single";
                         BackToBack = 0;
+                        sentLines = 0;
                         break;
                     case 2:
                         extraText.text = "Double";
                         BackToBack = 0;
+                        sentLines = 1;
                         break;
                     case 3:
                         extraText.text = "Triple";
                         BackToBack = 0;
+                        sentLines = 2;
                         break;
                     case 4:
                         extraText.text = "Quad";
                         BackToBack++;
+                        sentLines = 4;
                         break;
                     default:
                         extraText.text = linesCleared.ToString() + " Lines";
@@ -367,8 +336,11 @@ public class BotBoard : MonoBehaviour, Attackable
             extraText.CrossFadeAlpha(1, 0, false);
             extraText.CrossFadeAlpha(0, 2, false);
 
-            if(allClear) Debug.Log("ALL CLEAR");
-
+            if(allClear) // add " PC" to extra
+            {
+                extraText.text += " PC";
+            }
+            
             if(BackToBack > 0){
                 B2BText.text = "B2B: " + BackToBack.ToString();
             }
@@ -395,80 +367,41 @@ public class BotBoard : MonoBehaviour, Attackable
             Combo = 0;
         }
         
+        if(linesCleared > 0)
+        {
+            var actualLines = sentLines + Combo * linesCleared / 4 + b2bmap(BackToBack);
+            
+            if (allClear) actualLines += 10;
 
+            int b2bmap(int value)
+            {
+                if (value >= 0 && value <= 1)
+                    return 0;
+                else if (value >= 2 && value <= 3)
+                    return 1;
+                else if (value >= 4 && value <= 8)
+                    return 2;
+                else if (value >= 9 && value <= 24)
+                    return 3;
+                else if (value >= 25 && value <= 67)
+                    return 4;
+                else if (value >= 68 && value <= 185)
+                    return 5;
+                else if (value >= 186 && value <= 504)
+                    return 6;
+                else if (value >= 505 && value <= 1370)
+                    return 7;
+                else
+                    return 8;
+            }
+
+            if(actualLines > 0)
+                enemyBoard.TakeDamage(actualLines);
+        }
         
-
         return linesCleared;
     }
 
-    public int TSpinCorners(Vector3Int position){
-        var offsets = new Vector2Int [] {new Vector2Int(-1, 1), new Vector2Int(1, 1), new Vector2Int(1, -1), new Vector2Int(-1, -1)};
-        int cornercount = 0;
-        for (int i = 0; i < offsets.Length; i++){
-            // if there is a tile in the corner
-            if (this.tilemap.HasTile(position + (Vector3Int)offsets[i])){
-                cornercount++;
-            }
-            // or if corner is out of border
-            else if(!Bounds.Contains((Vector2Int)(position + (Vector3Int)offsets[i]))){
-                cornercount++;
-            }
-        }
-        return cornercount;
-    }
-
-    public int TSpinFacing(Vector3Int position, int rotationIndex){
-        Dictionary<int, Vector2Int[]> dictCorners = new Dictionary<int, Vector2Int[]>{
-            {0, new Vector2Int[] {new Vector2Int(-1, 1), new Vector2Int(1, 1)}},
-            {1, new Vector2Int[] {new Vector2Int(1, 1), new Vector2Int(1, -1)}},
-            {2, new Vector2Int[] {new Vector2Int(1, -1), new Vector2Int(-1, -1)}},
-            {3, new Vector2Int[] {new Vector2Int(-1, -1), new Vector2Int(-1, 1)}}
-        };
-
-        int facingcount = 0;
-        Vector2Int[] corners = dictCorners[rotationIndex];
-        foreach(var Corner in corners){
-            // if there is a tile in the corner
-            if (this.tilemap.HasTile(position + (Vector3Int)Corner)){
-                facingcount++;
-            }
-            // or if corner is out of border
-            else if(!Bounds.Contains((Vector2Int)(position + (Vector3Int)Corner))){
-                facingcount++;
-            }
-        }
-
-        return facingcount;
-    }
-
-    public bool Collides(Vector3Int[] cells, Vector3Int position, Piece exceptionPiece){
-        for (int i = 0; i < cells.Length; i++){
-            Vector3Int tilePosition = cells[i] + position;
-
-            bool excepts = false;
-            for(int j = 0; j < exceptionPiece.cells.Length; j++){
-                if(tilePosition == exceptionPiece.cells[j] + exceptionPiece.position){
-                    excepts = true;
-                }
-            }
-
-            if(excepts) continue;
-            
-            if (this.tilemap.HasTile(tilePosition))
-            {
-                // Debug.Log("Collides at" + (tilePosition));
-                return true;
-            }
-
-            if (!Bounds.Contains((Vector2Int)tilePosition))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    
     void AddGarbage(int lines)
     {
         int hole = Random.Range(0, 9);
@@ -579,7 +512,7 @@ public class BotBoard : MonoBehaviour, Attackable
         
         // convert rotation from north, east, south, west to 0, 1, 2, 3
         int orientation;
-        int Ioffsetx = 0, Ioffsety = 0;
+        int Ioffsetx = 0, Ioffsety = 0; // TRUE SRS OFFSETS
         switch (suggestion.moves[0].location.orientation)
         {
             case "north":
@@ -614,7 +547,9 @@ public class BotBoard : MonoBehaviour, Attackable
         activePiece.MoveTo(where, orientation);
         
         // lock the piece
-        activePiece.Lock();
+        var tspin = suggestion.moves[0].spin == "full";
+        var tspinmini = suggestion.moves[0].spin == "mini";
+        activePiece.Lock(tspin, tspinmini);
         return firstHold;
     }
 

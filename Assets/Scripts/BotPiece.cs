@@ -8,8 +8,6 @@ public class BotPiece : MonoBehaviour
     public TetrominoData data { get; private set; }
     public Vector3Int[] cells { get; set; }
     public int rotationIndex { get; set; }
-    public bool tspin { get; private set; }
-    public bool tspinmini { get; private set; }
     public bool canHold { get; private set; }
     public void Awake()
     {
@@ -55,7 +53,7 @@ public class BotPiece : MonoBehaviour
             board.Hold();
         canHold = false;
     }
-    public void Lock()
+    public void Lock(bool tspin = false, bool tspinmini = false)
     {
         board.Set(this);
 
