@@ -214,7 +214,7 @@ namespace TetrisBotProtocol
             while (true)
             {
                 // check for cancellation, use the timer to set pieces per second
-                await UniTask.Delay(500, cancellationToken: cts.Token);
+                await UniTask.Delay(1000, cancellationToken: cts.Token);
                 // send suggest message to the bot
                 
                 Debug.Log("F: " + suggestJson);
@@ -261,13 +261,17 @@ namespace TetrisBotProtocol
                 // else send a play message to the bot
                 if(!results.garbageRecieved)
                 {
-                    var playMessage = new PlayMessage
+                    // if moves is not empty, send play message to bot
+                    if (suggestion.moves.Count > 0)
                     {
-                        move = suggestion.moves[0],
-                    };
-                    var playJson = JsonConvert.SerializeObject(playMessage);
-                    Debug.Log("F: " + playJson);
-                    await stdin.WriteLineAsync(playJson);
+                        var playMessage = new PlayMessage
+                        {
+                            move = suggestion.moves[0],
+                        };
+                        var playJson = JsonConvert.SerializeObject(playMessage);
+                        Debug.Log("F: " + playJson);
+                        await stdin.WriteLineAsync(playJson);
+                    }
                 }
                 else
                 {
