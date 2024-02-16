@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -25,7 +26,11 @@ public class DamageVisual : MonoBehaviour
             }
             damageMap.SetTile(new Vector3Int(-1, y, 0), damageTiles[1].tile);
             y++;
+            
+            if (y > 32) // causes lag if uncapped
+            {
+                break;
+            }
         }
-        
     }
 }
