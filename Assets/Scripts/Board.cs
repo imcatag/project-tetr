@@ -31,6 +31,8 @@ public class Board : MonoBehaviour, IAttackable
     [SerializeField]
     public BotBoard enemyBotBoard;
     private GameTools gameTools;
+    [SerializeField]
+    public DamageVisual damageVisual;
     public List<Tetromino> CreateBag()
     {
         int bag = Convert.ToInt32(bagGenerator.mt.Next() % 5040);
@@ -157,6 +159,7 @@ public class Board : MonoBehaviour, IAttackable
         activePiece.Initialize(this, spawnPosition, data);
 
         Set(activePiece);
+        damageVisual.UpdateDamageVisual(damageToDo);
     }
 
     public void Hold()
@@ -217,11 +220,7 @@ public class Board : MonoBehaviour, IAttackable
         {
             UnityEngine.SceneManagement.SceneManager.LoadScene(0);
         }
-
-        if (Input.GetKeyDown(KeyCode.G))
-        {
-            TakeDamage(Random.Range(1,4));
-        }
+        
     }
 
     public void Clear(Piece piece)
@@ -593,6 +592,7 @@ public class Board : MonoBehaviour, IAttackable
     public void TakeDamage(int damage)
     {
         damageToDo.Add(damage);
+        damageVisual.UpdateDamageVisual(damageToDo);
     }
 
     public bool ApplyDamage()
@@ -616,7 +616,7 @@ public class Board : MonoBehaviour, IAttackable
                 
             }
         }
-        
+        damageVisual.UpdateDamageVisual(damageToDo);
         return doableDamage != 8;
     }
 }

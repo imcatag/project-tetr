@@ -48,8 +48,10 @@
      <Compile Include="Assets\Scripts\GameTools.cs" />
      <Compile Include="Assets\Comms\Scripts\HelloClient.cs" />
      <Compile Include="Assets\StandaloneFileBrowser\Sample\CanvasSampleOpenFileTextMultiple.cs" />
+     <Compile Include="Assets\Scripts\DamageVisual.cs" />
      <Compile Include="Assets\StandaloneFileBrowser\StandaloneFileBrowserWindows.cs" />
      <Compile Include="Assets\Scripts\IAttackable.cs" />
+     <Compile Include="Assets\Scripts\DamageTile.cs" />
      <Compile Include="Assets\Scripts\BotBoard.cs" />
      <Compile Include="Assets\Scripts\BotPiece.cs" />
      <Compile Include="Assets\Scripts\BagGeneratorMono.cs" />

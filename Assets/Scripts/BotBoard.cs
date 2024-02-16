@@ -33,6 +33,7 @@ public class BotBoard : MonoBehaviour, IAttackable
     public Board enemyBoard;
     public GameTools gameTools;
     [SerializeField] public int whichPlayerIsThis;
+    public DamageVisual damageVisual;
     public List<Tetromino> CreateBag()
     {
         int bag = Convert.ToInt32(bagGenerator.mt.Next() % 5040);
@@ -162,6 +163,7 @@ public class BotBoard : MonoBehaviour, IAttackable
         activePiece.Initialize(this, spawnPosition, data);
 
         Set(activePiece);
+        damageVisual.UpdateDamageVisual(damageToDo);
     }
     
     public void GameOver()
@@ -469,6 +471,7 @@ public class BotBoard : MonoBehaviour, IAttackable
     public void TakeDamage(int damage)
     {
         damageToDo.Add(damage);
+        damageVisual.UpdateDamageVisual(damageToDo);
     }
 
     public int CounterDamage(int counterable) // returns damage left to send
@@ -508,6 +511,7 @@ public class BotBoard : MonoBehaviour, IAttackable
                 doableDamage = 0;
                 
             }
+            damageVisual.UpdateDamageVisual(damageToDo);
         }
 
         return doableDamage != 8;
