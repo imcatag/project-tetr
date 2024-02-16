@@ -28,7 +28,7 @@ public class BotBoard : MonoBehaviour, IAttackable
     public TextMeshProUGUI extraText;
     public TextMeshProUGUI B2BText;
     public TextMeshProUGUI comboText;
-    private BagGenerator bagGenerator = new BagGenerator();
+    private BagGenerator bagGenerator;
     public List<int> damageToDo { get; set; }
     public Board enemyBoard;
     public GameTools gameTools;
@@ -64,6 +64,12 @@ public class BotBoard : MonoBehaviour, IAttackable
             tetrominoes[i].Initialize();
         }
 
+        
+    }
+
+    private void Start()
+    {
+        bagGenerator = new BagGenerator();
         // get two bags and put them in the queue
         List<Tetromino> bag1 = CreateBag();
         for (int i = 0; i < bag1.Count; i++)
@@ -71,10 +77,6 @@ public class BotBoard : MonoBehaviour, IAttackable
             var td = tetrominoes[(int)bag1[i]];
             queue.Enqueue(td);
         }
-    }
-
-    private void Start()
-    {
         SpawnPiece();
     }
     
