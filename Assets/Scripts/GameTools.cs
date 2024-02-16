@@ -50,4 +50,21 @@ public class GameTools : MonoBehaviour
         // restart bot
         botSelection.PlayBot();
     }
+
+    public void ResetStopped()
+    {
+        // stop bot
+        botSelection.botRunner.Stop();
+        
+        // reinitialize bag generator
+        bagGeneratorMono.Init();
+        
+        gameOver = false;
+        
+        // reset board
+        board.Init();
+        
+        // reset bot board
+        botBoard.Init();
+    }
 }

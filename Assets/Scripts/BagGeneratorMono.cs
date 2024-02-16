@@ -52,7 +52,7 @@ public class MersenneTwister
 
 public class BagGenerator
 {
-    public static uint seed;
+    public static uint seed ;
     public MersenneTwister mt;
     // Start is called before the first frame update
     public BagGenerator()
@@ -67,8 +67,9 @@ public class BagGeneratorMono : MonoBehaviour
     TextMeshProUGUI seed;
     void Awake()
     {
-        Init();
-
+        BagGenerator.seed = (uint) Random.Range(1, int.MaxValue);
+        seed = GameObject.Find("Seed").GetComponent<TextMeshProUGUI>();
+        seed.text = BagGenerator.seed.ToString();
     }
 
     public void Init()

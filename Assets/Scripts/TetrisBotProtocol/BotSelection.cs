@@ -32,16 +32,23 @@ namespace TetrisBotProtocol
             playButton.onClick.AddListener(PlayBot);
             pauseButton.onClick.AddListener(PauseBot);
             stopButton.onClick.AddListener(StopBot);
+            
+            var savedExePath = PlayerPrefs.GetString("PathLastPlayerBot", "");
+            if(savedExePath != "") {
+                botExePath = savedExePath;
+                botExePathText.text = System.IO.Path.GetFileName(botExePath);
+            }
         }
         public void SelectBotExe() {
             botExePath = null;
-            botExePathText.text = "Not Set";
+            botExePathText.text = "none selected";
+            PlayerPrefs.SetString("PathLastPlayerBot", "");
             var paths = StandaloneFileBrowser.OpenFilePanel("Choose your bot executable", "", "", false);
             if (paths.Length != 1) return;
             botExePath = paths[0];
             botExePathText.text = System.IO.Path.GetFileName(botExePath);
-
-            // botRunner.Begin(botExePath);
+            PlayerPrefs.SetString("PathLastPlayerBot", botExePath);
+            
         }
         
         public void PlayBot() {
@@ -55,8 +62,7 @@ namespace TetrisBotProtocol
         }
         
         public void StopBot() {
-            botRunner.Stop();
-            gameTools.ResetGame();
+            gameTools.ResetStopped();
             
         }
         

@@ -136,7 +136,8 @@ namespace TetrisBotProtocol
             cts.Cancel();
             Debug.Log("Stopping bot");
             
-            process.Kill();
+            if(process != null && !process.HasExited)
+                process.Kill();
         }
 
         public void Pause()
