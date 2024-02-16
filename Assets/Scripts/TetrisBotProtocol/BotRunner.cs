@@ -210,7 +210,7 @@ namespace TetrisBotProtocol
             while (true)
             {
                 // check for cancellation, use the timer to set pieces per second
-                await UniTask.DelayFrame(500, cancellationToken: cts.Token);
+                await UniTask.Delay(500, cancellationToken: cts.Token);
                 // send suggest message to the bot
                 
                 Debug.Log("F: " + suggestJson);
