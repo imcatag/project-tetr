@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -10,7 +11,6 @@ using Debug = UnityEngine.Debug;
 namespace TetrisBotProtocol
 {
     // utility
-
     public class MoveResults
     {
         public bool firstHold;
@@ -91,7 +91,8 @@ namespace TetrisBotProtocol
         private StreamWriter stdin;
         private UniTask botTask;
         private BotBoard botBoard;
-
+        public CancellationTokenSource cts = new CancellationTokenSource();
+        
         public void Begin(string botExePath)
         {
             Debug.Log("Starting bot: " + botExePath);
@@ -128,6 +129,22 @@ namespace TetrisBotProtocol
             botTask = RunBot();
             // read from stdout and debug log
 
+        }
+        
+        public void Stop()
+        {
+            cts.Cancel();
+            Debug.Log("Stopping bot");
+            
+            process.Kill();
+        }
+
+        public void Pause()
+        {
+            cts.Cancel();
+            Debug.Log("Pausing bot");
+            
+            process.Kill();
         }
 
         private async UniTask RunBot()
@@ -192,8 +209,8 @@ namespace TetrisBotProtocol
             
             while (true)
             {
-                // wait for .1s
-                await UniTask.Delay(500);
+                // check for cancellation, use the timer to set pieces per second
+                await UniTask.DelayFrame(500, cancellationToken: cts.Token);
                 // send suggest message to the bot
                 
                 Debug.Log("F: " + suggestJson);
@@ -255,7 +272,6 @@ namespace TetrisBotProtocol
                     Debug.Log("F: " + json);
                     await stdin.WriteLineAsync(json);
                 }
-                
             }
         }
     }

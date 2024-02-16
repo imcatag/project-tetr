@@ -30,6 +30,7 @@ public class Board : MonoBehaviour, IAttackable
     private BagGenerator bagGenerator = new BagGenerator();
     [SerializeField]
     public BotBoard enemyBotBoard;
+    private GameTools gameTools;
     public List<Tetromino> CreateBag()
     {
         int bag = Convert.ToInt32(bagGenerator.mt.Next() % 5040);
@@ -45,7 +46,7 @@ public class Board : MonoBehaviour, IAttackable
     }
     private void Awake()
     {
-        Application.targetFrameRate = 0;
+        gameTools = GameObject.Find("GameHolder").GetComponent<GameTools>();
 
         ghost = FindObjectOfType<Ghost>();
 
@@ -60,13 +61,39 @@ public class Board : MonoBehaviour, IAttackable
             tetrominoes[i].Initialize();
         }
 
-        // get two bags and put them in the queue
+        // put a bag in the queue
         List<Tetromino> bag1 = CreateBag();
         for (int i = 0; i < bag1.Count; i++)    
         {
             var td = tetrominoes[(int)bag1[i]];
             queue.Enqueue(td);
         }
+    }
+
+    public void Init()
+    {
+        // clear queue, held piece, active piece, and tiles
+        queue.Clear();
+        heldTetromino = Tetromino.NullTetromino;
+        tilemap.ClearAllTiles();
+        hasHeld = false;
+        totalLines = 0;
+        totalLinesText.text = "Lines: 0";
+        BackToBack = 0;
+        Combo = 0;
+        extraText.text = "";
+        B2BText.text = "";
+        comboText.text = "";
+        damageToDo.Clear();
+        bagGenerator = new BagGenerator();
+        List<Tetromino> bag1 = CreateBag();
+        for (int i = 0; i < bag1.Count; i++)    
+        {
+            var td = tetrominoes[(int)bag1[i]];
+            queue.Enqueue(td);
+        }
+        SpawnPiece();
+        
     }
 
     private void Start()
@@ -119,12 +146,14 @@ public class Board : MonoBehaviour, IAttackable
             Vector3Int tilePosition = (Vector3Int)data.cells[i] + spawnPosition;
             if (this.tilemap.HasTile(tilePosition))
             {
-                Debug.Log("Game Over");
+                if(!gameTools.gameOver) 
+                    gameTools.ResetGame(1);
+                gameTools.gameOver = true;
                 
                 return;
             }
         }
-
+        
         activePiece.Initialize(this, spawnPosition, data);
 
         Set(activePiece);

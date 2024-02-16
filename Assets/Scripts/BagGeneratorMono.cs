@@ -1,10 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
-using System;
 using TMPro;
-using UnityEngine.UI;
+using Unity.VisualScripting;
+
 public class MersenneTwister
 {
     private uint[] mt;
@@ -70,9 +67,14 @@ public class BagGeneratorMono : MonoBehaviour
     TextMeshProUGUI seed;
     void Awake()
     {
-        BagGenerator.seed = (uint) new System.Random().Next(1, int.MaxValue);
+        Init();
+
+    }
+
+    public void Init()
+    {
+        BagGenerator.seed = (uint) Random.Range(1, int.MaxValue);
         seed = GameObject.Find("Seed").GetComponent<TextMeshProUGUI>();
         seed.text = BagGenerator.seed.ToString();
-
     }
 }

@@ -31,6 +31,8 @@ public class BotBoard : MonoBehaviour, IAttackable
     private BagGenerator bagGenerator = new BagGenerator();
     public List<int> damageToDo { get; set; }
     public Board enemyBoard;
+    public GameTools gameTools;
+    [SerializeField] public int whichPlayerIsThis;
     public List<Tetromino> CreateBag()
     {
         int bag = Convert.ToInt32(bagGenerator.mt.Next() % 5040);
@@ -50,6 +52,8 @@ public class BotBoard : MonoBehaviour, IAttackable
     }
     private void Awake()
     {
+        gameTools = GameObject.Find("GameHolder").GetComponent<GameTools>();
+        
         this.tilemap = GetComponentInChildren<Tilemap>();
         this.activePiece = GetComponentInChildren<BotPiece>();
         
@@ -70,6 +74,31 @@ public class BotBoard : MonoBehaviour, IAttackable
 
     private void Start()
     {
+        SpawnPiece();
+    }
+    
+    public void Init()
+    {
+        // clear queue, held piece, active piece, and tiles
+        queue.Clear();
+        heldTetromino = Tetromino.NullTetromino;
+        tilemap.ClearAllTiles();
+        hasHeld = false;
+        totalLines = 0;
+        totalLinesText.text = "Lines: 0";
+        BackToBack = 0;
+        Combo = 0;
+        extraText.text = "";
+        B2BText.text = "";
+        comboText.text = "";
+        damageToDo.Clear();
+        bagGenerator = new BagGenerator();
+        List<Tetromino> bag1 = CreateBag();
+        for (int i = 0; i < bag1.Count; i++)    
+        {
+            var td = tetrominoes[(int)bag1[i]];
+            queue.Enqueue(td);
+        }
         SpawnPiece();
     }
 
@@ -126,15 +155,21 @@ public class BotBoard : MonoBehaviour, IAttackable
             Vector3Int tilePosition = (Vector3Int)data.cells[i] + obstructedCheck;
             if (this.tilemap.HasTile(tilePosition))
             {
-                Debug.Log("Game Over");
-                
-                return;
+                GameOver();
             }
         }
 
         activePiece.Initialize(this, spawnPosition, data);
 
         Set(activePiece);
+    }
+    
+    public void GameOver()
+    {
+        if(!gameTools.gameOver) 
+            gameTools.ResetGame(whichPlayerIsThis);
+        gameTools.gameOver = true;
+
     }
 
     public void Hold()
@@ -519,6 +554,14 @@ public class BotBoard : MonoBehaviour, IAttackable
 
     public MoveResults MakeMove(BotSuggestion suggestion)
     {
+        // if moves array is empty, call it game over and reset the game 
+        if(suggestion.moves.Count == 0)
+        {
+            GameOver();
+            return new MoveResults();
+        }
+        
+        
         // see if piece is the same as active piece
         // if yes, apply the move
         // if no, hold then apply the move
