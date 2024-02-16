@@ -92,11 +92,12 @@ namespace TetrisBotProtocol
         private UniTask botTask;
         private BotBoard botBoard;
         public CancellationTokenSource cts = new CancellationTokenSource();
-        
+        public bool active { get; set; }
+
         public void Begin(string botExePath)
         {
             Debug.Log("Starting bot: " + botExePath);
-
+            active = true;
             botBoard = GetComponentInChildren<BotBoard>();
 
             if (botBoard == null)
@@ -133,6 +134,7 @@ namespace TetrisBotProtocol
         
         public void Stop()
         {
+            active = false;
             cts.Cancel();
             Debug.Log("Stopping bot");
             
@@ -142,6 +144,7 @@ namespace TetrisBotProtocol
 
         public void Pause()
         {
+            active = false;
             cts.Cancel();
             Debug.Log("Pausing bot");
             

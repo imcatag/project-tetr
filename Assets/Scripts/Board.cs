@@ -215,8 +215,8 @@ public class Board : MonoBehaviour, IAttackable
 
     public void Update()
     {
-        // pressing R reloads the scene
-        if (Input.GetKeyDown(KeyCode.R))
+        // pressing R while holding ctrl reloads the scene
+        if ((Input.GetKeyDown(KeyCode.R) && Input.GetKey(KeyCode.LeftControl)) || Input.GetKeyDown(KeyCode.F5))
         {
             UnityEngine.SceneManagement.SceneManager.LoadScene(0);
         }

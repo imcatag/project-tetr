@@ -52,7 +52,7 @@ namespace TetrisBotProtocol
         }
         
         public void PlayBot() {
-            if (botExePath == null) return;
+            if (botExePath == null || botRunner.active) return;
             botRunner.cts = new CancellationTokenSource();
             botRunner.Begin(botExePath);
         }
