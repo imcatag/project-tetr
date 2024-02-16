@@ -1,3 +1,5 @@
+# Project Tetr
 Work in progress.
 
-Will soon allow you to play compeititively against bots.
+Currently allows you to 1v1 any bot that uses [Tetris Bot Protocol](https://github.com/tetris-bot-protocol/tbp-spec/).
+
