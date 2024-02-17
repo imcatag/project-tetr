@@ -23,13 +23,11 @@ namespace TetrisBotProtocol
     {
         public string type;
     }
-
     public class RulesMessage
     {
         public string randomizer;
         public string type = "rules";
     }
-
     public class StartMessage
     {
         public string hold;
@@ -40,13 +38,11 @@ namespace TetrisBotProtocol
         public List<string[]> board;
         public string type = "start";
     }
-
     public class NewPieceMessage
     {
         public string piece;
         public string type = "new_piece";
     }
-
     public class BotInfo
     {
         public string name;
@@ -54,13 +50,12 @@ namespace TetrisBotProtocol
         public string author;
         public List<string> features;
     }
-
     public class PlayMessage
     {
         public string type = "play";
         public BotMove move;
     }
-
+    
     // bot to frontend messages
     public class Location
     {
@@ -69,19 +64,16 @@ namespace TetrisBotProtocol
         public int x;
         public int y;
     }
-
     public class BotMove
     {
         public Location location;
         public string spin;
     }
-
     public class BotSuggestion
     {
         public string type;
         public List<BotMove> moves;
     }
-
     public class BotRunner : MonoBehaviour
     {
 
@@ -91,6 +83,8 @@ namespace TetrisBotProtocol
         private StreamWriter stdin;
         private UniTask botTask;
         private BotBoard botBoard;
+        private Board board;
+        private GameTools gameTools;
         public CancellationTokenSource cts = new CancellationTokenSource();
         public bool active { get; set; }
 
@@ -99,7 +93,8 @@ namespace TetrisBotProtocol
             Debug.Log("Starting bot: " + botExePath);
             active = true;
             botBoard = GetComponentInChildren<BotBoard>();
-
+            board = GameObject.Find("Board").GetComponent<Board>();
+            gameTools = GameObject.Find("GameHolder").GetComponent<GameTools>();
             if (botBoard == null)
             {
                 Debug.LogError("BotBoard not found");
@@ -172,16 +167,6 @@ namespace TetrisBotProtocol
             Debug.Log("F: " + json);
             await stdin.WriteLineAsync(json);
 
-
-            // send start message to the bot
-
-            var startMessage = botBoard.ToStartMessage();
-
-            json = JsonConvert.SerializeObject(startMessage);
-
-            Debug.Log("F: " + json);
-            await stdin.WriteLineAsync(json);
-
             // read 'ready' message, if not ready, error
             line = await stdout.ReadLineAsync();
             Debug.Log("Bot: " + line);
@@ -200,6 +185,23 @@ namespace TetrisBotProtocol
                 Debug.LogError("Bot did not respond with ready message");
             }
             
+            // delay for 1 second
+            await UniTask.Delay(1000, cancellationToken: cts.Token);
+            gameTools.gameOver = false;
+            gameTools.ClearGameOver();
+            botBoard.Init();
+            board.Init();
+            board.SpawnPiece();
+            
+            // send start message to the bot
+
+            var startMessage = botBoard.ToStartMessage();
+
+            json = JsonConvert.SerializeObject(startMessage);
+
+            Debug.Log("F: " + json);
+            await stdin.WriteLineAsync(json);
+            
             // main loop
             // frontend sends suggest
             // bot sends suggestion
@@ -214,7 +216,7 @@ namespace TetrisBotProtocol
             while (true)
             {
                 // check for cancellation, use the timer to set pieces per second
-                await UniTask.Delay(1000, cancellationToken: cts.Token);
+                await UniTask.Delay(250, cancellationToken: cts.Token);
                 // send suggest message to the bot
                 
                 Debug.Log("F: " + suggestJson);

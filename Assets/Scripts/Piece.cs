@@ -141,6 +141,10 @@ public class Piece : MonoBehaviour
     }
     public void Update()
     {
+        if (board == null || board.frozen)
+        {
+            return;
+        }
         board.Clear(this);
         checkMove();
         

@@ -31,6 +31,7 @@ public class Board : MonoBehaviour, IAttackable
     [SerializeField]
     public BotBoard enemyBotBoard;
     private GameTools gameTools;
+    public bool frozen = false;
     [SerializeField]
     public DamageVisual damageVisual;
     public List<Tetromino> CreateBag()
@@ -86,8 +87,7 @@ public class Board : MonoBehaviour, IAttackable
             var td = tetrominoes[(int)bag1[i]];
             queue.Enqueue(td);
         }
-        SpawnPiece();
-        
+        frozen = false;
     }
 
     private void Start()
@@ -100,6 +100,11 @@ public class Board : MonoBehaviour, IAttackable
             var td = tetrominoes[(int)bag1[i]];
             queue.Enqueue(td);
         }
+        
+    }
+
+    public void ManualStart()
+    {
         SpawnPiece();
     }
 

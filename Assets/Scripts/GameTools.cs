@@ -7,7 +7,7 @@ public class GameTools : MonoBehaviour
     private Board board;
     private BotBoard botBoard;
     private BagGeneratorMono bagGeneratorMono;
-    private TextMeshProUGUI scoreText1, scoreText2;
+    private TextMeshProUGUI scoreText1, scoreText2, roundOverText;
     private BotSelection botSelection;
     public bool gameOver = false;
     void Start()
@@ -19,16 +19,28 @@ public class GameTools : MonoBehaviour
         scoreText1 = GameObject.Find("score1").GetComponent<TextMeshProUGUI>();
         scoreText2 = GameObject.Find("score2").GetComponent<TextMeshProUGUI>();
         botSelection = GameObject.Find("BotBoard").GetComponent<BotSelection>();
+        roundOverText = GameObject.Find("RoundOver").GetComponent<TextMeshProUGUI>();
     }
 
     public void ResetGame(int whoLost = 0)
     {
+        // set game over text
+        roundOverText.text = "Round Over";
+        
+        // freeze board
+        board.frozen = true;
+        
         if(whoLost == 2)
             scoreText1.text = (int.Parse(scoreText1.text) + 1).ToString();
         else if(whoLost == 1)
             scoreText2.text = (int.Parse(scoreText2.text) + 1).ToString();
         
-        Invoke("ResetEverything", 2f);
+        Invoke("ResetEverything", 0f);
+    }
+    
+    public void ClearGameOver()
+    {
+        roundOverText.text = "";
     }
 
     public void ResetEverything()
@@ -41,11 +53,8 @@ public class GameTools : MonoBehaviour
         
         gameOver = false;
         
-        // reset board
-        board.Init();
-        
         // reset bot board
-        botBoard.Init();
+        // botBoard.Init();
         
         // restart bot
         botSelection.PlayBot();
