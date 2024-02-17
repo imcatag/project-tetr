@@ -83,6 +83,8 @@ namespace BotBotScripts.TetrisBotProtocol
         private UniTask botTask;
         private BotBoardBB botBoard;
         private GameToolsBB gameTools;
+        public BotRunnerBB enemyBotRunner;
+        public bool ready;
         public CancellationTokenSource cts = new CancellationTokenSource();
         public int botSpeed { get; set; }
         public bool active { get; set; }
@@ -173,6 +175,7 @@ namespace BotBotScripts.TetrisBotProtocol
                 // error
                 Debug.LogError("Bot did not respond with ready message");
             }
+            
 
             // deserialize the message
             var botMessage = JsonConvert.DeserializeObject<SimpleTypeMessage>(line);
@@ -183,6 +186,14 @@ namespace BotBotScripts.TetrisBotProtocol
                 Debug.LogError("Bot did not respond with ready message");
             }
             
+            // set ready to true
+            ready = true;
+            
+            // wait for enemy bot to be ready
+            while (enemyBotRunner != null && !enemyBotRunner.ready)
+            {
+                await UniTask.Delay(100);
+            }
             // delay for 1 second
             
             await UniTask.Delay(1000, cancellationToken: cts.Token);
