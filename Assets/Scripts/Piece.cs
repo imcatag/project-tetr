@@ -143,12 +143,16 @@ public class Piece : MonoBehaviour
     }
     public void Update()
     {
-        if (board == null || board.frozen)
-        {
-            return;
-        }
+        if (board == null) return;
+
         board.Clear(this);
         checkMove();
+
+        if (board.frozen)
+        {
+            board.Set(this);
+            return;
+        };
         
         if(!board.IsPositionValid(this, position + Vector3Int.down)) // if not falling
         {
