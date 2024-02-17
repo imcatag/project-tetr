@@ -45,10 +45,10 @@ namespace Settings
         private void SetDelayedAutoShift(string DAStime)
         {
             Debug.LogWarning("Setting delayed auto shift to " + DAStime);
-            // if parsing fails, set to 1000
+            // if parsing fails, set to preference
             if (!int.TryParse(DAStime, out delayedAutoShift))
             {
-                delayedAutoShift = 1000;
+                delayedAutoShift = PlayerPrefs.GetInt("DelayedAutoShift", 75);
                 dasField.text = delayedAutoShift.ToString();
             }
             
@@ -68,10 +68,10 @@ namespace Settings
         public void SetBotSpeed(string textInput)
         {
             Debug.LogWarning("Setting bot speed to " + textInput);
-            // if parsing fails, set to 1000
+            // if parsing fails, set to preference
             if (!int.TryParse(textInput, out botSpeed))
             {
-                botSpeed = 1000;
+                botSpeed = PlayerPrefs.GetInt("BotSpeed", 1000);
                 botSpeedInputField.text = botSpeed.ToString();
             }
             

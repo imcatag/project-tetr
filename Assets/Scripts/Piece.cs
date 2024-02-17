@@ -154,7 +154,7 @@ public class Piece : MonoBehaviour
         {
             autoFallTime = Time.time;
             totalNoFallTime += Time.deltaTime;
-            if(noFallTime + autoFallInterval < Time.time || totalNoFallTime > autoFallInterval * 3)
+            if(noFallTime + autoFallInterval < Time.time || totalNoFallTime > autoFallInterval * 2)
             {
                 Lock();
             }
@@ -175,14 +175,12 @@ public class Piece : MonoBehaviour
         {
             while(Move(Vector2Int.down)) // personal settings - using infinite soft drop for now
             {
-                continue;
+                // reset fall variables
+                autoFallTime = Time.time;
+                autoFalls = 0;
+                noFallTime = Time.time;
             }
-            // reset fall variables
-            autoFallTime = Time.time;
-            autoFalls = 0;
-            noFallTime = Time.time;
-            totalNoFallTime = 0;
-
+            
             // Move(Vector2Int.down);
         }
         
