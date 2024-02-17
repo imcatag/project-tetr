@@ -8,4 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/PlayerBot.unity
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/BotBot.unity
+    guid: b953aeedea9423e4da3a8d46b6d9b917
   m_configObjects: {}

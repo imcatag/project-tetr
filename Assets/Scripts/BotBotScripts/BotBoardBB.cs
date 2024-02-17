@@ -1,42 +1,46 @@
 using System;
 using System.Collections.Generic;
+using TetrisBotProtocol;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using BotSuggestion = BotBotScripts.TetrisBotProtocol.BotSuggestion;
 using Random = UnityEngine.Random;
 
-public class Board : MonoBehaviour, IAttackable
+public class BotBoardBB : MonoBehaviour, IAttackable
 {
     public TetrominoData[] tetrominoes;
     public Tilemap tilemap { get; private set; }
-    public Piece activePiece { get; private set; }
-    public Ghost ghost { get; private set; }
+    public BotPieceBB activePiece { get; private set; }
     public Tetromino heldTetromino { get; private set; }
-    public List<int> damageToDo { get; set; }
     public Boolean hasHeld { get; private set; }
-    private Vector3Int spawnPosition = new Vector3Int(4, 20, 0);
+    private Vector3Int spawnPosition = new Vector3Int(-4, 14, 0);
+    private Vector3Int obstructedCheck = new Vector3Int(4, 20, 0);
     private Vector2Int boardSize = new Vector2Int(10, 40);
     public TetrominoData[] bag = new TetrominoData[7];
     private int bagIndex;
     public Queue<TetrominoData> queue = new Queue<TetrominoData>();
-    private int BackToBack;
-    private int Combo;
+    private int BackToBack = 0;
+    private int Combo = 0;
     private int totalLines = 0;
-    public float DASTime { get; set; }
+    public float DASTime = 0.075f;
     public TextMeshProUGUI totalLinesText;
     public TextMeshProUGUI extraText;
     public TextMeshProUGUI B2BText;
     public TextMeshProUGUI comboText;
     private BagGenerator bagGenerator;
-    [SerializeField]
-    public BotBoard enemyBotBoard;
-    private GameTools gameTools;
-    public bool frozen = false;
-    [SerializeField]
+    public List<int> damageToDo { get; set; }
+    public BotBoardBB enemyBoard;
+    public GameToolsBB gameTools;
+    [SerializeField] public int whichPlayerIsThis;
     public DamageVisual damageVisual;
     public List<Tetromino> CreateBag()
     {
         int bag = Convert.ToInt32(bagGenerator.mt.Next() % 5040);
+        int bagRandom = UnityEngine.Random.Range(0, 5040);
+
+        // get permutation from bagRandom
+
         return Data.allBags[bag];
     }
     public RectInt Bounds {
@@ -49,22 +53,33 @@ public class Board : MonoBehaviour, IAttackable
     }
     private void Awake()
     {
-        gameTools = GameObject.Find("GameHolder").GetComponent<GameTools>();
-
-        ghost = FindObjectOfType<Ghost>();
-
-        ghost.Initialize(this);
-
+        gameTools = GameObject.Find("GameHolder").GetComponent<GameToolsBB>();
+        
         this.tilemap = GetComponentInChildren<Tilemap>();
-        this.activePiece = GetComponentInChildren<Piece>();
+        this.activePiece = GetComponentInChildren<BotPieceBB>();
         
         damageToDo = new List<int>();
 
         for (int i = 0; i < 7; i++) {
             tetrominoes[i].Initialize();
         }
+
+        
     }
 
+    private void Start()
+    {
+        bagGenerator = new BagGenerator();
+        // get two bags and put them in the queue
+        List<Tetromino> bag1 = CreateBag();
+        for (int i = 0; i < bag1.Count; i++)
+        {
+            var td = tetrominoes[(int)bag1[i]];
+            queue.Enqueue(td);
+        }
+        SpawnPiece();
+    }
+    
     public void Init()
     {
         // clear queue, held piece, active piece, and tiles
@@ -87,23 +102,19 @@ public class Board : MonoBehaviour, IAttackable
             var td = tetrominoes[(int)bag1[i]];
             queue.Enqueue(td);
         }
-        frozen = false;
+        SpawnPiece();
     }
 
-    private void Start()
-    {
-        bagGenerator = new BagGenerator();
-        // put a bag in the queue
-        List<Tetromino> bag1 = CreateBag();
-        for (int i = 0; i < bag1.Count; i++)    
-        {
-            var td = tetrominoes[(int)bag1[i]];
-            queue.Enqueue(td);
-        }
-        
-    }
     public void SpawnPiece()
     {
+        // clear the spawn area
+        for (int i = -6; i < 0; i++)
+        {
+            for (int j = 13; j < 17; j++)
+            {
+                tilemap.SetTile(new Vector3Int(i, j, 0), null);
+            }
+        }
         // if queue has < 7 pieces, get a new bag and put it in the queue
         if (queue.Count < 7)
         {
@@ -144,27 +155,29 @@ public class Board : MonoBehaviour, IAttackable
 
         for(int i = 0; i < data.cells.Length; i++)
         {
-            Vector3Int tilePosition = (Vector3Int)data.cells[i] + spawnPosition;
+            Vector3Int tilePosition = (Vector3Int)data.cells[i] + obstructedCheck;
             if (this.tilemap.HasTile(tilePosition))
             {
-                if(!gameTools.gameOver) 
-                    gameTools.ResetGame(1);
-                gameTools.gameOver = true;
-                
-                return;
+                GameOver();
             }
         }
-        
+
         activePiece.Initialize(this, spawnPosition, data);
 
         Set(activePiece);
         damageVisual.UpdateDamageVisual(damageToDo);
     }
+    
+    public void GameOver()
+    {
+        if(!gameTools.gameOver) 
+            gameTools.ResetGame(whichPlayerIsThis);
+        gameTools.gameOver = true;
+
+    }
 
     public void Hold()
     {
-        // reset hold timers for piece
-        
         if(!hasHeld)
         {
             hasHeld = true;
@@ -179,18 +192,6 @@ public class Board : MonoBehaviour, IAttackable
         {
             // if there is a held piece, swap the current piece with the held piece
             TetrominoData temp = activePiece.data;
-            // if spawn of hold piece is obstructed, game over
-            for(int i = 0; i < temp.cells.Length; i++)
-            {
-                Vector3Int tilePosition = (Vector3Int)temp.cells[i] + spawnPosition;
-                if (this.tilemap.HasTile(tilePosition))
-                {
-                    if(!gameTools.gameOver) 
-                        gameTools.ResetGame(1);
-                    gameTools.gameOver = true;
-                    return;
-                }
-            }
             activePiece.Initialize(this, spawnPosition, tetrominoes[(int)heldTetromino]);
             heldTetromino = temp.tetromino;
         }
@@ -199,7 +200,7 @@ public class Board : MonoBehaviour, IAttackable
         // unset the tiles from -6, 14 to 1, 20
         for (int i = -6; i < 0; i++)
         {
-            for (int j = 14; j < 21; j++)
+            for (int j = 18; j < 21; j++)
             {
                 tilemap.SetTile(new Vector3Int(i, j, 0), null);
             }
@@ -215,18 +216,21 @@ public class Board : MonoBehaviour, IAttackable
 
     }
 
-    public void Set(Piece piece)
+    public void Set(BotPieceBB piece)
     {
         for (int i = 0; i < piece.cells.Length; i++)
         {
             Vector3Int tilePosition = piece.cells[i] + piece.position;
             tilemap.SetTile(tilePosition, piece.data.tile);
         }
-
-        ghost.UpdateGhost(piece);
     }
 
-    public void Clear(Piece piece)
+    public void Update()
+    {
+        
+    }
+
+    public void Clear(BotPieceBB piece)
     {
         for (int i = 0; i < piece.cells.Length; i++)
         {
@@ -235,47 +239,6 @@ public class Board : MonoBehaviour, IAttackable
         }
     }
 
-    public bool IsPositionValid(Piece piece, Vector3Int position)
-    {
-        for (int i = 0; i < piece.cells.Length; i++)
-        {
-            Vector3Int tilePosition = piece.cells[i] + position;
-            if (this.tilemap.HasTile(tilePosition))
-            {
-                return false;
-            }
-
-            if (!Bounds.Contains((Vector2Int)tilePosition))
-            {
-                return false;
-            }
-
-        }
-
-        return true;
-    }
-
-    public bool IsRotationValid(Vector3Int[] cells, Vector3Int position)
-    {
-        for (int i = 0; i < cells.Length; i++)
-        {
-            Vector3Int tilePosition = cells[i] + position;
-            if (this.tilemap.HasTile(tilePosition))
-            {
-                return false;
-            }
-
-            if (!Bounds.Contains((Vector2Int)tilePosition))
-            {
-                return false;
-            }
-
-        }
-
-        return true;
-    }
-    
-    
     public int ClearLines(bool tspin, bool tspinmini)
     {
         // go through each row and check if it is full
@@ -470,103 +433,18 @@ public class Board : MonoBehaviour, IAttackable
                     return 8;
             }
 
-            if(actualLines > 0)
+            if (actualLines > 0)
             {
                 // counter damage, then send rest
                 var leftToSend = CounterDamage(actualLines);
-                enemyBotBoard.TakeDamage(leftToSend);
+                
+                enemyBoard.TakeDamage(leftToSend);
             }
-            
         }
         
         return linesCleared;
     }
 
-    public int TSpinCorners(Vector3Int position){
-        var offsets = new Vector2Int [] {new Vector2Int(-1, 1), new Vector2Int(1, 1), new Vector2Int(1, -1), new Vector2Int(-1, -1)};
-        int cornercount = 0;
-        for (int i = 0; i < offsets.Length; i++){
-            // if there is a tile in the corner
-            if (this.tilemap.HasTile(position + (Vector3Int)offsets[i])){
-                cornercount++;
-            }
-            // or if corner is out of border
-            else if(!Bounds.Contains((Vector2Int)(position + (Vector3Int)offsets[i]))){
-                cornercount++;
-            }
-        }
-        return cornercount;
-    }
-
-    public int TSpinFacing(Vector3Int position, int rotationIndex)
-    {
-        Dictionary<int, Vector2Int[]> dictCorners = new Dictionary<int, Vector2Int[]>
-        {
-            { 0, new Vector2Int[] { new Vector2Int(-1, 1), new Vector2Int(1, 1) } },
-            { 1, new Vector2Int[] { new Vector2Int(1, 1), new Vector2Int(1, -1) } },
-            { 2, new Vector2Int[] { new Vector2Int(1, -1), new Vector2Int(-1, -1) } },
-            { 3, new Vector2Int[] { new Vector2Int(-1, -1), new Vector2Int(-1, 1) } }
-        };
-
-        int facingcount = 0;
-        Vector2Int[] corners = dictCorners[rotationIndex];
-        foreach(var Corner in corners){
-            // if there is a tile in the corner
-            if (this.tilemap.HasTile(position + (Vector3Int)Corner)){
-                facingcount++;
-            }
-            // or if corner is out of border
-            else if(!Bounds.Contains((Vector2Int)(position + (Vector3Int)Corner))){
-                facingcount++;
-            }
-        }
-
-        return facingcount;
-    }
-
-    public bool Collides(Vector3Int[] cells, Vector3Int position, Piece exceptionPiece){
-        for (int i = 0; i < cells.Length; i++){
-            Vector3Int tilePosition = cells[i] + position;
-
-            bool excepts = false;
-            for(int j = 0; j < exceptionPiece.cells.Length; j++){
-                if(tilePosition == exceptionPiece.cells[j] + exceptionPiece.position){
-                    excepts = true;
-                }
-            }
-
-            if(excepts) continue;
-            
-            if (this.tilemap.HasTile(tilePosition))
-            {
-                // Debug.Log("Collides at" + (tilePosition));
-                return true;
-            }
-
-            if (!Bounds.Contains((Vector2Int)tilePosition))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-    public int CounterDamage(int counterable) // returns damage left to send
-    {
-        while (counterable > 0 && damageToDo.Count > 0)
-        {
-            if (damageToDo[0] <= counterable)
-            {
-                counterable -= damageToDo[0];
-                damageToDo.RemoveAt(0);
-            }
-            else
-            {
-                damageToDo[0] -= counterable;
-                counterable = 0;
-            }
-        }
-        return counterable;
-    }
     void AddGarbage(int lines)
     {
         int hole = Random.Range(0, 9);
@@ -598,6 +476,23 @@ public class Board : MonoBehaviour, IAttackable
         damageVisual.UpdateDamageVisual(damageToDo);
     }
 
+    public int CounterDamage(int counterable) // returns damage left to send
+    {
+        while (counterable > 0 && damageToDo.Count > 0)
+        {
+            if (damageToDo[0] <= counterable)
+            {
+                counterable -= damageToDo[0];
+                damageToDo.RemoveAt(0);
+            }
+            else
+            {
+                damageToDo[0] -= counterable;
+                counterable = 0;
+            }
+        }
+        return counterable;
+    }
     public bool ApplyDamage()
     {
         // apply up to 8 lines at once
@@ -618,9 +513,144 @@ public class Board : MonoBehaviour, IAttackable
                 doableDamage = 0;
                 
             }
+            damageVisual.UpdateDamageVisual(damageToDo);
         }
-        damageVisual.UpdateDamageVisual(damageToDo);
+
         return doableDamage != 8;
+    }
+
+    public StartMessage ToStartMessage()
+    {
+        StartMessage startMessage = new StartMessage();
+        
+        if (hasHeld)
+        {
+            startMessage.hold = heldTetromino.ToString();
+        }
+        else
+        {
+            startMessage.hold = null;
+        }
+        
+        // queue is current piece, then next 5 pieces
+        startMessage.queue = new string[6];
+        startMessage.queue[0] = activePiece.data.tetromino.ToString();
+        
+        for(int i = 0; i < 5; i++)
+        {
+            startMessage.queue[i + 1] = queue.ToArray()[i].tetromino.ToString();
+        }
+        
+        startMessage.combo = Combo;
+        startMessage.back_to_back = BackToBack > 0;
+        startMessage.b2b_counter = BackToBack;
+        startMessage.board = new List<string[]>();
+        // set capacity to 40
+        startMessage.board.Capacity = 40;
+        for (int i = 0; i < 40; i++)
+        {
+            startMessage.board.Add(new string[10]);
+            for (int j = 0; j < 10; j++)
+            {
+                startMessage.board[i][j] = this.tilemap.HasTile(new Vector3Int(j, i, 0)) ? "G" : null;
+            }
+        }
+        return startMessage;
+    }
+
+    public MoveResults MakeMove(BotSuggestion suggestion)
+    {
+        // if moves array is empty, call it game over and reset the game 
+        if(suggestion.moves.Count == 0)
+        {
+            GameOver();
+            return new MoveResults();
+        }
+        
+        
+        // see if piece is the same as active piece
+        // if yes, apply the move
+        // if no, hold then apply the move
+        var results = new MoveResults();
+        if(activePiece.data.tetromino.ToString() != suggestion.moves[0].location.type)
+        {
+            // if hold empty
+            if(!hasHeld)
+                results.firstHold = true;
+            Hold();
+        }
+        // apply the move
+        Vector2Int where = new Vector2Int();
+        
+        // convert rotation from north, east, south, west to 0, 1, 2, 3
+        int orientation;
+        int Ioffsetx = 0, Ioffsety = 0; // TRUE SRS OFFSETS
+        int Ooffsetx = 0, Ooffsety = 0; // TRUE SRS OFFSETS
+        switch (suggestion.moves[0].location.orientation)
+        {
+            case "north":
+                orientation = 0;
+                Ioffsety = -1;
+                break;
+            case "east":
+                orientation = 1;
+                Ioffsetx = -1;
+                Ioffsety = -1;
+                
+                Ooffsety = -1;
+                break;
+            case "south":
+                orientation = 2;
+                Ioffsetx = -1;
+                
+                Ooffsetx = -1;
+                Ooffsety = -1;
+                break;
+            case "west":
+                orientation = 3;
+                Ooffsetx = -1;
+                break;
+            default:
+                orientation = 0;
+                break;
+        }
+
+        where.x = suggestion.moves[0].location.x;
+        where.y = suggestion.moves[0].location.y;
+        
+        if(activePiece.data.tetromino == Tetromino.I)
+        {
+            where.x += Ioffsetx;
+            where.y += Ioffsety;
+        }
+        else if(activePiece.data.tetromino == Tetromino.O)
+        {
+            where.x += Ooffsetx;
+            where.y += Ooffsety;
+        }
+        activePiece.MoveTo(where, orientation);
+        
+        // lock the piece
+        var tspin = suggestion.moves[0].spin == "full";
+        var tspinmini = suggestion.moves[0].spin == "mini";
+        var hasCleared = activePiece.Lock(tspin, tspinmini);
+        
+        // apply damage if no line clears
+        if (!hasCleared)
+        {
+            var damaged = ApplyDamage();
+            if (damaged)
+            {
+                results.garbageRecieved = true;
+            }
+        }
+
+        return results;
+    }
+
+    public string GetQueuePiece(int index)
+    {
+        return queue.ToArray()[index].tetromino.ToString();
     }
 }
 

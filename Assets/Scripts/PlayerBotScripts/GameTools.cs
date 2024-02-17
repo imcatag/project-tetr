@@ -1,3 +1,4 @@
+using System;
 using TetrisBotProtocol;
 using TMPro;
 using UnityEngine;
@@ -20,6 +21,20 @@ public class GameTools : MonoBehaviour
         scoreText2 = GameObject.Find("score2").GetComponent<TextMeshProUGUI>();
         botSelection = GameObject.Find("BotBoard").GetComponent<BotSelection>();
         roundOverText = GameObject.Find("RoundOver").GetComponent<TextMeshProUGUI>();
+    }
+
+    public void Update()
+    {
+        // pressing R while holding ctrl reloads the scene
+        if ((Input.GetKeyDown(KeyCode.R) && Input.GetKey(KeyCode.LeftControl)) || Input.GetKeyDown(KeyCode.F5))
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+        }
+        // pressing T while holding ctrl changes the scene
+        if ((Input.GetKeyDown(KeyCode.T) && Input.GetKey(KeyCode.LeftControl)) || Input.GetKeyDown(KeyCode.F6))
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(1);
+        }
     }
 
     public void ResetGame(int whoLost = 0)
