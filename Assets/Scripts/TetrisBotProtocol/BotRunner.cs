@@ -86,10 +86,13 @@ namespace TetrisBotProtocol
         private Board board;
         private GameTools gameTools;
         public CancellationTokenSource cts = new CancellationTokenSource();
+        public int botSpeed { get; set; }
         public bool active { get; set; }
 
         public void Begin(string botExePath)
         {
+            // set bot speed to the value in the player prefs
+            botSpeed = PlayerPrefs.GetInt("BotSpeed", 1000);
             Debug.Log("Starting bot: " + botExePath);
             active = true;
             botBoard = GetComponentInChildren<BotBoard>();
@@ -217,7 +220,7 @@ namespace TetrisBotProtocol
             while (true)
             {
                 // check for cancellation, use the timer to set pieces per second
-                await UniTask.Delay(10, cancellationToken: cts.Token);
+                await UniTask.Delay(botSpeed, cancellationToken: cts.Token);
                 // send suggest message to the bot
                 
                 Debug.Log("F: " + suggestJson);

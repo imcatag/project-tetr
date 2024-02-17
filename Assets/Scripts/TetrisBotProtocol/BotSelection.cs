@@ -25,7 +25,6 @@ namespace TetrisBotProtocol
             pauseButton = GameObject.Find("PauseButton").GetComponent<Button>();
             stopButton = GameObject.Find("StopButton").GetComponent<Button>();
             gameTools = GameObject.Find("GameHolder").GetComponent<GameTools>();
-            
             botRunner = GameObject.Find("BotBoard").GetComponent<BotRunner>();
             
             selectButton.onClick.AddListener(SelectBotExe);
