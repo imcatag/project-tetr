@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using TetrisBotProtocol;
 using TMPro;
 using UnityEngine;
@@ -585,6 +584,7 @@ public class BotBoard : MonoBehaviour, IAttackable
         // convert rotation from north, east, south, west to 0, 1, 2, 3
         int orientation;
         int Ioffsetx = 0, Ioffsety = 0; // TRUE SRS OFFSETS
+        int Ooffsetx = 0, Ooffsety = 0; // TRUE SRS OFFSETS
         switch (suggestion.moves[0].location.orientation)
         {
             case "north":
@@ -595,13 +595,19 @@ public class BotBoard : MonoBehaviour, IAttackable
                 orientation = 1;
                 Ioffsetx = -1;
                 Ioffsety = -1;
+                
+                Ooffsety = -1;
                 break;
             case "south":
                 orientation = 2;
                 Ioffsetx = -1;
+                
+                Ooffsetx = -1;
+                Ooffsety = -1;
                 break;
             case "west":
                 orientation = 3;
+                Ooffsetx = -1;
                 break;
             default:
                 orientation = 0;
@@ -615,6 +621,11 @@ public class BotBoard : MonoBehaviour, IAttackable
         {
             where.x += Ioffsetx;
             where.y += Ioffsety;
+        }
+        else if(activePiece.data.tetromino == Tetromino.O)
+        {
+            where.x += Ooffsetx;
+            where.y += Ooffsety;
         }
         activePiece.MoveTo(where, orientation);
         
