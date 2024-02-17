@@ -58,6 +58,8 @@ public class Piece : MonoBehaviour
     }
     public void Initialize(Board board, Vector3Int position, TetrominoData data)
     {
+        autoFallTime = Time.time;
+        autoFalls = 0;
         this.board = board;
         this.position = position;
         this.data = data;

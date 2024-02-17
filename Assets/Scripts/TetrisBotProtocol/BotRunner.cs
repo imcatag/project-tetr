@@ -186,11 +186,12 @@ namespace TetrisBotProtocol
             }
             
             // delay for 1 second
+            
             await UniTask.Delay(1000, cancellationToken: cts.Token);
             gameTools.gameOver = false;
             gameTools.ClearGameOver();
-            botBoard.Init();
             board.Init();
+            botBoard.Init();
             board.SpawnPiece();
             
             // send start message to the bot
@@ -216,7 +217,7 @@ namespace TetrisBotProtocol
             while (true)
             {
                 // check for cancellation, use the timer to set pieces per second
-                await UniTask.Delay(250, cancellationToken: cts.Token);
+                await UniTask.Delay(10, cancellationToken: cts.Token);
                 // send suggest message to the bot
                 
                 Debug.Log("F: " + suggestJson);

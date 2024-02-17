@@ -102,12 +102,6 @@ public class Board : MonoBehaviour, IAttackable
         }
         
     }
-
-    public void ManualStart()
-    {
-        SpawnPiece();
-    }
-
     public void SpawnPiece()
     {
         // if queue has < 7 pieces, get a new bag and put it in the queue
@@ -169,6 +163,8 @@ public class Board : MonoBehaviour, IAttackable
 
     public void Hold()
     {
+        // reset hold timers for piece
+        
         if(!hasHeld)
         {
             hasHeld = true;
@@ -183,6 +179,18 @@ public class Board : MonoBehaviour, IAttackable
         {
             // if there is a held piece, swap the current piece with the held piece
             TetrominoData temp = activePiece.data;
+            // if spawn of hold piece is obstructed, game over
+            for(int i = 0; i < temp.cells.Length; i++)
+            {
+                Vector3Int tilePosition = (Vector3Int)temp.cells[i] + spawnPosition;
+                if (this.tilemap.HasTile(tilePosition))
+                {
+                    if(!gameTools.gameOver) 
+                        gameTools.ResetGame(1);
+                    gameTools.gameOver = true;
+                    return;
+                }
+            }
             activePiece.Initialize(this, spawnPosition, tetrominoes[(int)heldTetromino]);
             heldTetromino = temp.tetromino;
         }
