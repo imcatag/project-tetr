@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
+using Unity.Mathematics;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -220,11 +222,16 @@ namespace BotBotScripts.TetrisBotProtocol
             };
             
             var suggestJson = JsonConvert.SerializeObject(suggestMessage);
+            var startTurn = 0f;
+            var endTurn = 0f;
             
             while (true)
             {
                 // check for cancellation, use the timer to set pieces per second
-                await UniTask.Delay(botSpeed, cancellationToken: cts.Token);
+                await UniTask.Delay(math.max(1, botSpeed - Convert.ToInt32(endTurn - startTurn)*1000), cancellationToken: cts.Token);
+                
+                startTurn = Time.time;
+                
                 // send suggest message to the bot
                 
                 Debug.Log("F: " + suggestJson);
@@ -290,6 +297,10 @@ namespace BotBotScripts.TetrisBotProtocol
                     Debug.Log("F: " + json);
                     await stdin.WriteLineAsync(json);
                 }
+                
+                endTurn = Time.time;
+                Debug.Log("Turn Time: " + (endTurn - startTurn));
+                
             }
         }
     }
