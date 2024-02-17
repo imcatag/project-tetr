@@ -91,8 +91,6 @@ namespace TetrisBotProtocol
 
         public void Begin(string botExePath)
         {
-            // set bot speed to the value in the player prefs
-            botSpeed = PlayerPrefs.GetInt("BotSpeed", 1000);
             Debug.Log("Starting bot: " + botExePath);
             active = true;
             botBoard = GetComponentInChildren<BotBoard>();

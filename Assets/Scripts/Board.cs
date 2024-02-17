@@ -22,7 +22,7 @@ public class Board : MonoBehaviour, IAttackable
     private int BackToBack;
     private int Combo;
     private int totalLines = 0;
-    public float DASTime = 0.075f;
+    public float DASTime { get; set; }
     public TextMeshProUGUI totalLinesText;
     public TextMeshProUGUI extraText;
     public TextMeshProUGUI B2BText;
