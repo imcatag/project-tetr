@@ -4665,7 +4665,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a4b0af4d1732d94392c5f6aea87f005, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damageMap: {fileID: 1858086716}
+  damageMap: {fileID: 117491174}
   damageTiles:
   - tile: {fileID: 11400000, guid: 7655915c409bf80499c92edfa2ef0bc1, type: 2}
   - tile: {fileID: 11400000, guid: d76037f3650117648a773f37c919eb01, type: 2}
@@ -5741,7 +5741,7 @@ Transform:
   m_GameObject: {fileID: 1858086715}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -10, y: -23.893946, z: 0.37955117}
+  m_LocalPosition: {x: 10, y: -23.893946, z: 0.37955117}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
