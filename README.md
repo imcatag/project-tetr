@@ -26,3 +26,5 @@ Bot Speed is configurable individually for BvB.
 Bot speed under 50ms is experimental and not guaranteed to work. The faster the speed, the higher the odds something will go wrong.
 
 For ideal visuals, use a 16:9 resolution.
+
+The game has absolutely no authority. It will accept move 0 every time, will not question whether that move is obstructed, unreachable or if it is or not a spin.
