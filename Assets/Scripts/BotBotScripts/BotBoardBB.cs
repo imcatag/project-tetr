@@ -34,6 +34,8 @@ public class BotBoardBB : MonoBehaviour, IAttackable
     public GameToolsBB gameTools;
     [SerializeField] public int whichPlayerIsThis;
     public DamageVisual damageVisual;
+    public GameObject shadowCastingPrefab;
+    public string shadowCasterTag;
     public List<Tetromino> CreateBag()
     {
         int bag = Convert.ToInt32(bagGenerator.mt.Next() % 5040);
@@ -166,6 +168,30 @@ public class BotBoardBB : MonoBehaviour, IAttackable
 
         Set(activePiece);
         damageVisual.UpdateDamageVisual(damageToDo);
+        
+        // clear the shadow casters
+        GameObject[] shadowCasters = GameObject.FindGameObjectsWithTag(shadowCasterTag);
+        foreach (GameObject shadowCaster in shadowCasters)
+        {
+            Destroy(shadowCaster);
+        }
+        
+        BoundsInt bounds = tilemap.cellBounds;
+
+        foreach (Vector3Int position in bounds.allPositionsWithin)
+        {
+            if (tilemap.HasTile(position))
+            {
+                // spawn a ShadowCasterPrefab
+                Vector3 worldPosition = tilemap.CellToWorld(position);
+                
+                // add 0.95 to both x and y to get proper position
+                worldPosition.x += 0.95f;
+                worldPosition.y += 0.95f;
+                
+                Instantiate(shadowCastingPrefab, worldPosition, Quaternion.identity);
+            }
+        }
     }
     
     public void GameOver()

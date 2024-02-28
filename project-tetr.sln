@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniTask.Linq", "UniTask.Linq.csproj", "{a16b6f82-0866-7fa2-bc4f-74e5af462bfa}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniTask", "UniTask.csproj", "{62e33917-5737-b950-fdad-50a00a883183}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniTask.Linq", "UniTask.Linq.csproj", "{a16b6f82-0866-7fa2-bc4f-74e5af462bfa}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{89d37d8f-61f9-89f0-0b11-88b6040f62e5}"
 EndProject
@@ -22,10 +22,10 @@ Global
 		Debug|Any CPU = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{a16b6f82-0866-7fa2-bc4f-74e5af462bfa}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{a16b6f82-0866-7fa2-bc4f-74e5af462bfa}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62e33917-5737-b950-fdad-50a00a883183}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{62e33917-5737-b950-fdad-50a00a883183}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{a16b6f82-0866-7fa2-bc4f-74e5af462bfa}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{a16b6f82-0866-7fa2-bc4f-74e5af462bfa}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89d37d8f-61f9-89f0-0b11-88b6040f62e5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{89d37d8f-61f9-89f0-0b11-88b6040f62e5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0d561c95-8eaa-491e-e787-fb3d3cbc3605}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
