@@ -114,7 +114,7 @@
      <Folder Include="Assets\Scripts" />
      <None Include="Assets\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
      <Folder Include="Assets\Scripts\PlayerBotScripts" />
-     <Folder Include="Assets\Materials" />
+     <Folder Include="Assets\Materials&amp;Prefabs" />
      <Folder Include="Assets\Sprites" />
      <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
      <Folder Include="Assets\TextMesh Pro\Shaders" />
