@@ -1,6 +1,6 @@
 
 # Project Tetr
-Work in progress.
+Work in progress. Here is a [showcase](https://www.youtube.com/watch?v=TqWu-4EPfW0).
 
 Currently allows you to 1v1 a Tetris bot, or have two Tetris bots 1v1-ing eachoter. Bots need to implement [Tetris Bot Protocol](https://github.com/tetris-bot-protocol/tbp-spec/).
 
