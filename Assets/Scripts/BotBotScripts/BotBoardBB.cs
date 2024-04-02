@@ -29,7 +29,7 @@ public class BotBoardBB : MonoBehaviour, IAttackable
     public TextMeshProUGUI B2BText;
     public TextMeshProUGUI comboText;
     private BagGenerator bagGenerator;
-    public List<int> damageToDo { get; set; }
+    public List<Attack> damageToDo { get; set; }
     public BotBoardBB enemyBoard;
     public GameToolsBB gameTools;
     [SerializeField] public int whichPlayerIsThis;
@@ -58,7 +58,7 @@ public class BotBoardBB : MonoBehaviour, IAttackable
         this.tilemap = GetComponentInChildren<Tilemap>();
         this.activePiece = GetComponentInChildren<BotPieceBB>();
         
-        damageToDo = new List<int>();
+        damageToDo = new List<Attack>();
 
         for (int i = 0; i < 7; i++) {
             tetrominoes[i].Initialize();
@@ -445,9 +445,8 @@ public class BotBoardBB : MonoBehaviour, IAttackable
         return linesCleared;
     }
 
-    void AddGarbage(int lines)
+    void AddGarbage(int lines, int hole)
     {
-        int hole = Random.Range(0, 9);
         // move everything up by lines, top to bottom
         for (int y = Bounds.yMax - lines; y >= Bounds.yMin; y--)
         {
@@ -472,7 +471,9 @@ public class BotBoardBB : MonoBehaviour, IAttackable
     }
     public void TakeDamage(int damage)
     {
-        damageToDo.Add(damage);
+        // generate hole for the garbage
+        int hole = Random.Range(0, 9);
+        damageToDo.Add(new Attack { damage = damage, hole = hole });
         damageVisual.UpdateDamageVisual(damageToDo);
     }
 
@@ -480,14 +481,14 @@ public class BotBoardBB : MonoBehaviour, IAttackable
     {
         while (counterable > 0 && damageToDo.Count > 0)
         {
-            if (damageToDo[0] <= counterable)
+            if (damageToDo[0].damage <= counterable)
             {
-                counterable -= damageToDo[0];
+                counterable -= damageToDo[0].damage;
                 damageToDo.RemoveAt(0);
             }
             else
             {
-                damageToDo[0] -= counterable;
+                damageToDo[0].damage -= counterable;
                 counterable = 0;
             }
         }
@@ -500,16 +501,16 @@ public class BotBoardBB : MonoBehaviour, IAttackable
         while(damageToDo.Count > 0 && doableDamage > 0)
         {
             // apply min(damageQueue.first, doableDamage) lines
-            if (damageToDo[0] <= doableDamage)
+            if (damageToDo[0].damage <= doableDamage)
             {
-                doableDamage -= damageToDo[0];
-                AddGarbage(damageToDo[0]);
+                doableDamage -= damageToDo[0].damage;
+                AddGarbage(damageToDo[0].damage, damageToDo[0].hole);
                 damageToDo.RemoveAt(0);
             }
             else
             {
-                damageToDo[0] -= doableDamage;
-                AddGarbage(doableDamage);
+                damageToDo[0].damage -= doableDamage;
+                AddGarbage(doableDamage, damageToDo[0].hole);
                 doableDamage = 0;
                 
             }
