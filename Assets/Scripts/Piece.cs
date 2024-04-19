@@ -356,6 +356,7 @@ public class Piece : MonoBehaviour
 
     private void Lock()
     {
+        board.totalPieces++;
         board.Set(this);
         canHold = true;
 

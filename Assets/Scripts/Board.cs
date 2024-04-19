@@ -27,6 +27,8 @@ public class Board : MonoBehaviour, IAttackable
     public TextMeshProUGUI extraText;
     public TextMeshProUGUI B2BText;
     public TextMeshProUGUI comboText;
+    public TextMeshProUGUI pps;
+    public TextMeshProUGUI apm;
     private BagGenerator bagGenerator;
     [SerializeField]
     public BotBoard enemyBotBoard;
@@ -34,6 +36,9 @@ public class Board : MonoBehaviour, IAttackable
     public bool frozen = false;
     [SerializeField]
     public DamageVisual damageVisual;
+    private float startTime;
+    public int totalPieces = 0;
+    public int totalAttacks = 0;
     public List<Tetromino> CreateBag()
     {
         int bag = Convert.ToInt32(bagGenerator.mt.Next() % 5040);
@@ -69,6 +74,8 @@ public class Board : MonoBehaviour, IAttackable
     {
         // clear queue, held piece, active piece, and tiles
         queue.Clear();
+        totalPieces = 0;
+        totalAttacks = 0;
         heldTetromino = Tetromino.NullTetromino;
         tilemap.ClearAllTiles();
         hasHeld = false;
@@ -88,6 +95,8 @@ public class Board : MonoBehaviour, IAttackable
             queue.Enqueue(td);
         }
         frozen = false;
+        startTime = Time.time;
+        
     }
 
     private void Start()
@@ -100,7 +109,14 @@ public class Board : MonoBehaviour, IAttackable
             var td = tetrominoes[(int)bag1[i]];
             queue.Enqueue(td);
         }
-        
+    }
+    
+    private void Update()
+    {
+        // set pps and apm
+        float timeElapsed = Time.time - startTime;
+        pps.text = "PPS: " + (totalPieces / timeElapsed).ToString("F2");
+        apm.text = "APM: " + (totalAttacks / timeElapsed * 60).ToString("F2");
     }
     public void SpawnPiece()
     {
@@ -474,6 +490,7 @@ public class Board : MonoBehaviour, IAttackable
             {
                 // counter damage, then send rest
                 var leftToSend = CounterDamage(actualLines);
+                totalAttacks += leftToSend;
                 enemyBotBoard.TakeDamage(leftToSend);
             }
             

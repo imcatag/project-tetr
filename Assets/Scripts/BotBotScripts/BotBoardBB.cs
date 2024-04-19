@@ -28,12 +28,17 @@ public class BotBoardBB : MonoBehaviour, IAttackable
     public TextMeshProUGUI extraText;
     public TextMeshProUGUI B2BText;
     public TextMeshProUGUI comboText;
+    public TextMeshProUGUI pps;
+    public TextMeshProUGUI apm;
     private BagGenerator bagGenerator;
     public List<Attack> damageToDo { get; set; }
     public BotBoardBB enemyBoard;
     public GameToolsBB gameTools;
     [SerializeField] public int whichPlayerIsThis;
     public DamageVisual damageVisual;
+    private float startTime;
+    public int totalPieces = 0;
+    public int totalAttacks = 0;
     public List<Tetromino> CreateBag()
     {
         int bag = Convert.ToInt32(bagGenerator.mt.Next() % 5040);
@@ -63,8 +68,6 @@ public class BotBoardBB : MonoBehaviour, IAttackable
         for (int i = 0; i < 7; i++) {
             tetrominoes[i].Initialize();
         }
-
-        
     }
 
     private void Start()
@@ -79,11 +82,21 @@ public class BotBoardBB : MonoBehaviour, IAttackable
         }
         SpawnPiece();
     }
+
+    private void Update()
+    {
+        // set pps and apm
+        float timeElapsed = Time.time - startTime;
+        pps.text = "PPS: " + (totalPieces / timeElapsed).ToString("F2");
+        apm.text = "APM: " + (totalAttacks / timeElapsed * 60).ToString("F2");
+    }
     
     public void Init()
     {
         // clear queue, held piece, active piece, and tiles
         queue.Clear();
+        totalPieces = 0;
+        totalAttacks = 0;
         heldTetromino = Tetromino.NullTetromino;
         tilemap.ClearAllTiles();
         hasHeld = false;
@@ -103,6 +116,7 @@ public class BotBoardBB : MonoBehaviour, IAttackable
             queue.Enqueue(td);
         }
         SpawnPiece();
+        startTime = Time.time;
     }
 
     public void SpawnPiece()
@@ -223,11 +237,6 @@ public class BotBoardBB : MonoBehaviour, IAttackable
             Vector3Int tilePosition = piece.cells[i] + piece.position;
             tilemap.SetTile(tilePosition, piece.data.tile);
         }
-    }
-
-    public void Update()
-    {
-        
     }
 
     public void Clear(BotPieceBB piece)
@@ -437,7 +446,7 @@ public class BotBoardBB : MonoBehaviour, IAttackable
             {
                 // counter damage, then send rest
                 var leftToSend = CounterDamage(actualLines);
-                
+                totalAttacks += actualLines;
                 enemyBoard.TakeDamage(leftToSend);
             }
         }

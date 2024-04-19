@@ -55,6 +55,7 @@ public class BotPieceBB : MonoBehaviour
     }
     public bool Lock(bool tspin = false, bool tspinmini = false)
     {
+        board.totalPieces++;
         board.Set(this);
 
         canHold = true;
