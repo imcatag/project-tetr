@@ -77,7 +77,6 @@ namespace BotBotScripts.TetrisBotProtocol
     }
     public class BotRunnerBB : MonoBehaviour
     {
-
         private Process process;
         private StreamReader stdout;
         private StreamReader stderr;
@@ -120,10 +119,12 @@ namespace BotBotScripts.TetrisBotProtocol
             };
 
             process = new Process { StartInfo = startInfo };
+            Debug.LogWarning("PROCESS STARTING");
             process.Start();
             stdout = process.StandardOutput;
             stderr = process.StandardError;
             stdin = process.StandardInput;
+            // clear stdin
             botTask = RunBot();
             // read from stdout and debug log
 
@@ -137,6 +138,12 @@ namespace BotBotScripts.TetrisBotProtocol
             
             if(process != null && !process.HasExited)
                 process.Kill();
+
+            process = null;
+            
+            ready = false;
+            
+            
         }
 
         public void Pause()
@@ -145,7 +152,16 @@ namespace BotBotScripts.TetrisBotProtocol
             cts.Cancel();
             Debug.Log("Pausing bot");
             
+            // wait for botTask to finish
+            botTask.Forget();
+            
             process.Kill();
+            
+            process = null;
+            
+            ready = false;
+            
+            
         }
 
         private async UniTask RunBot()
@@ -228,7 +244,7 @@ namespace BotBotScripts.TetrisBotProtocol
             while (true)
             {
                 // check for cancellation, use the timer to set pieces per second
-                await UniTask.Delay(math.max(1, botSpeed - Convert.ToInt32(endTurn - startTurn)*1000), cancellationToken: cts.Token);
+                await UniTask.Delay(math.max(0, botSpeed - Convert.ToInt32(endTurn - startTurn)*1000), cancellationToken: cts.Token);
                 
                 startTurn = Time.time;
                 
