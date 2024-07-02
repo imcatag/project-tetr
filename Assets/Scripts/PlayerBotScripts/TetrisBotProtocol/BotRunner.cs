@@ -231,6 +231,8 @@ namespace TetrisBotProtocol
                 {
                     // error
                     Debug.LogError("Bot did not respond with suggestion message");
+                    // call game over
+                    gameTools.ResetGame(2);
                     break;
                 }
                 

@@ -87,6 +87,7 @@ namespace BotBotScripts.TetrisBotProtocol
         public BotRunnerBB enemyBotRunner;
         public bool ready;
         public CancellationTokenSource cts = new CancellationTokenSource();
+        private int whichPlayerIsThis;
         public int botSpeed { get; set; }
         public bool active { get; set; }
 
@@ -101,6 +102,8 @@ namespace BotBotScripts.TetrisBotProtocol
                 Debug.LogError("BotBoard not found");
                 return;
             }
+            
+            whichPlayerIsThis = botBoard.whichPlayerIsThis;
 
             // create a UniTask for the bot
             // run a process with the bot
@@ -210,7 +213,7 @@ namespace BotBotScripts.TetrisBotProtocol
             // wait for enemy bot to be ready
             while (enemyBotRunner != null && !enemyBotRunner.ready)
             {
-                await UniTask.Delay(100);
+                await UniTask.Delay(10);
             }
             // delay for 1 second
             
@@ -260,6 +263,8 @@ namespace BotBotScripts.TetrisBotProtocol
                 {
                     // error
                     Debug.LogError("Bot did not respond with suggestion message");
+                    // call game over
+                    gameTools.ResetGame(whichPlayerIsThis);
                     break;
                 }
                 
